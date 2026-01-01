@@ -32,11 +32,13 @@ docker compose up -d
 
 Open `http://YOUR_SERVER_IP:3000` from any device on your network.
 
-**Requirements:**
-- Docker with [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (for GPU acceleration)
+**Requirements (NVIDIA GPU):**
+- Docker with [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - [Ollama](https://ollama.ai/) running on your network
 - [n8n](https://n8n.io/) with MCP enabled (Settings > MCP Access)
 - 12GB+ VRAM recommended
+
+**Apple Silicon?** See [Apple Silicon Setup](#apple-silicon-m1m2m3m4) below.
 
 ## Network Modes
 
@@ -152,6 +154,112 @@ docker compose --profile https up -d
 ```
 https://your-machine.tailnet.ts.net
 ```
+
+## Apple Silicon (M1/M2/M3/M4)
+
+CAAL runs on Apple Silicon Macs using [mlx-audio](https://github.com/Blaizzy/mlx-audio) for Metal-accelerated STT/TTS.
+
+> **Why not Docker for everything?** Docker on macOS can't access Metal GPU. STT/TTS must run on the host for GPU acceleration.
+
+### Prerequisites
+
+**1. Install mlx-audio** (with all dependencies):
+```bash
+pip install "mlx-audio[all]"
+```
+
+**2. Install Ollama** (native MPS support):
+```bash
+brew install ollama
+ollama pull ministral-3:8b
+```
+
+### Quick Start
+
+**1. Start mlx-audio** (keep running in a terminal):
+```bash
+python -m mlx_audio.server --host 0.0.0.0 --port 8000
+```
+
+**2. Pre-load models** (in another terminal):
+```bash
+curl -X POST "http://localhost:8000/v1/models?model_name=mlx-community/whisper-medium-mlx"
+curl -X POST "http://localhost:8000/v1/models?model_name=prince-canuma/Kokoro-82M"
+```
+
+**3. Start Ollama:**
+```bash
+ollama serve
+# Or use: brew services start ollama
+```
+
+**4. Configure `.env`:**
+```bash
+cp .env.example .env
+nano .env
+```
+
+Update these values:
+```bash
+CAAL_HOST_IP=192.168.1.100     # Your Mac's LAN IP
+OLLAMA_HOST=http://localhost:11434
+N8N_MCP_URL=http://192.168.1.100:5678/mcp-server/http
+N8N_MCP_TOKEN=your_token
+```
+
+**5. Start CAAL:**
+```bash
+docker compose -f docker-compose.apple.yaml up -d
+```
+
+**6. Open:** `http://localhost:3000`
+
+### Architecture (Apple Silicon)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  macOS Host                                             │
+│                                                         │
+│  ┌─────────────┐  ┌─────────────┐                       │
+│  │  mlx-audio  │  │   Ollama    │                       │
+│  │ (STT + TTS) │  │   (LLM)     │                       │
+│  │   :8000     │  │  :11434     │                       │
+│  │  [Metal]    │  │   [MPS]     │                       │
+│  └──────┬──────┘  └──────┬──────┘                       │
+│         │                │                              │
+│  ┌──────┴────────────────┴──────────────────────────┐   │
+│  │           Docker (ARM64)                         │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐        │   │
+│  │  │ Frontend │  │ LiveKit  │  │  Agent   │        │   │
+│  │  │  :3000   │  │  :7880   │  │  :8889   │        │   │
+│  │  └──────────┘  └──────────┘  └──────────┘        │   │
+│  └──────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Troubleshooting (Apple Silicon)
+
+**mlx-audio not found:**
+```bash
+# Make sure you're using the right Python
+which python  # Should be your mlx-audio environment
+pip install mlx-audio
+```
+
+**Agent can't reach mlx-audio:**
+```bash
+# Verify mlx-audio is running
+curl http://localhost:8000/health
+
+# Check Docker can reach host
+docker run --rm alpine ping -c1 host.docker.internal
+```
+
+**Slow first request:**
+Normal - mlx-audio loads models on first use. Subsequent requests are fast.
+
+**Voice not working:**
+CAAL uses Kokoro voices like `am_puck`, `af_heart` - these should work directly with mlx-audio since it uses the same Kokoro model. If you encounter issues, check the mlx-audio logs for model loading errors.
 
 ## Architecture
 
@@ -456,8 +564,9 @@ Both use the same `--profile https` and nginx for TLS termination.
 ## Related Projects
 
 - [LiveKit Agents](https://github.com/livekit/agents) - Voice agent framework
-- [Speaches](https://github.com/speaches-ai/speaches) - Faster-Whisper STT server
-- [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) - Kokoro TTS server
+- [Speaches](https://github.com/speaches-ai/speaches) - Faster-Whisper STT server (NVIDIA GPU)
+- [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) - Kokoro TTS server (NVIDIA GPU)
+- [mlx-audio](https://github.com/Blaizzy/mlx-audio) - STT/TTS for Apple Silicon (Metal)
 - [Ollama](https://ollama.ai/) - Local LLM server
 - [n8n](https://n8n.io/) - Workflow automation
 - [Picovoice Porcupine](https://picovoice.ai/platform/porcupine/) - Wake word engine

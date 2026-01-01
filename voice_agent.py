@@ -77,6 +77,7 @@ logging.getLogger("caal").setLevel(logging.INFO)  # Our package - INFO level
 SPEACHES_URL = os.getenv("SPEACHES_URL", "http://speaches:8000")
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "Systran/faster-whisper-small")
 KOKORO_URL = os.getenv("KOKORO_URL", "http://kokoro:8880")
+TTS_MODEL = os.getenv("TTS_MODEL", "kokoro")  # "kokoro" for Kokoro-FastAPI, "prince-canuma/Kokoro-82M" for mlx-audio
 OLLAMA_THINK = os.getenv("OLLAMA_THINK", "false").lower() == "true"
 TIMEZONE_ID = os.getenv("TIMEZONE", "America/Los_Angeles")
 TIMEZONE_DISPLAY = os.getenv("TIMEZONE_DISPLAY", "Pacific Time")
@@ -248,7 +249,7 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         tts=openai.TTS(
             base_url=f"{KOKORO_URL}/v1",
             api_key="not-needed",  # Kokoro doesn't require auth
-            model="kokoro",
+            model=TTS_MODEL,
             voice=runtime["tts_voice"],
         ),
         vad=silero.VAD.load(),

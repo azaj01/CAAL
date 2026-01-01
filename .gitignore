@@ -68,6 +68,12 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Flutter/Dart build artifacts
+mobile/.dart_tool/
+mobile/.flutter-plugins-dependencies
+mobile/*.apk
+mobile/*.aab
+
 # Testing
 .pytest_cache/
 .coverage
