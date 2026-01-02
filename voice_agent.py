@@ -54,6 +54,7 @@ from caal.integrations import (
 )
 from caal.llm import ollama_llm_node, ToolDataCache
 from caal import session_registry
+from caal.stt import WakeWordGatedSTT
 
 # Configure logging (LiveKit CLI reconfigures root logger, so set our level explicitly)
 logging.basicConfig(level=logging.INFO, format="%(message)s", force=True)
@@ -238,13 +239,75 @@ async def entrypoint(ctx: agents.JobContext) -> None:
     logger.info(f"  MCP: {list(mcp_servers.keys()) or 'None'}")
     logger.info("=" * 60)
 
+    # Build STT - optionally wrapped with wake word detection
+    base_stt = openai.STT(
+        base_url=f"{SPEACHES_URL}/v1",
+        api_key="not-needed",  # Speaches doesn't require auth
+        model=WHISPER_MODEL,
+    )
+
+    # Load wake word settings
+    all_settings = settings_module.load_settings()
+    wake_word_enabled = all_settings.get("wake_word_enabled", False)
+
+    # Session reference for wake word callback (set after session creation)
+    _session_ref: AgentSession | None = None
+
+    if wake_word_enabled:
+        import json
+        import random
+
+        wake_word_model = all_settings.get("wake_word_model", "models/hey_jarvis.onnx")
+        wake_word_threshold = all_settings.get("wake_word_threshold", 0.5)
+        wake_word_timeout = all_settings.get("wake_word_timeout", 3.0)
+        wake_greetings = all_settings.get("wake_greetings", ["Hey, what's up?"])
+
+        async def on_wake_detected():
+            """Trigger wake greeting when wake word detected."""
+            nonlocal _session_ref
+            if _session_ref is None:
+                logger.warning("Wake word detected but session not ready")
+                return
+
+            greeting = random.choice(wake_greetings)
+            logger.info(f"Wake word detected! Saying: {greeting}")
+            try:
+                await _session_ref.say(greeting)
+            except Exception as e:
+                logger.warning(f"Failed to say wake greeting: {e}")
+
+        async def on_state_changed(state):
+            """Publish wake word state to connected clients."""
+            payload = json.dumps({
+                "type": "wakeword_state",
+                "state": state.value,
+            })
+            try:
+                await ctx.room.local_participant.publish_data(
+                    payload.encode("utf-8"),
+                    reliable=True,
+                    topic="wakeword_state",
+                )
+                logger.debug(f"Published wake word state: {state.value}")
+            except Exception as e:
+                logger.warning(f"Failed to publish wake word state: {e}")
+
+        stt_instance = WakeWordGatedSTT(
+            inner_stt=base_stt,
+            model_path=wake_word_model,
+            threshold=wake_word_threshold,
+            silence_timeout=wake_word_timeout,
+            on_wake_detected=on_wake_detected,
+            on_state_changed=on_state_changed,
+        )
+        logger.info(f"  Wake word: ENABLED (model={wake_word_model}, threshold={wake_word_threshold})")
+    else:
+        stt_instance = base_stt
+        logger.info("  Wake word: disabled")
+
     # Create session with Speaches STT and Kokoro TTS (both OpenAI-compatible)
     session = AgentSession(
-        stt=openai.STT(
-            base_url=f"{SPEACHES_URL}/v1",
-            api_key="not-needed",  # Speaches doesn't require auth
-            model=WHISPER_MODEL,
-        ),
+        stt=stt_instance,
         llm=ollama_llm,
         tts=openai.TTS(
             base_url=f"{KOKORO_URL}/v1",
@@ -254,6 +317,9 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         ),
         vad=silero.VAD.load(),
     )
+
+    # Set session reference for wake word callback
+    _session_ref = session
 
     # ==========================================================================
     # Round-trip latency tracking

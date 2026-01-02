@@ -51,6 +51,7 @@ COPY --from=deps /app/.venv /app/.venv
 COPY --chown=agent:agent src/ ./src/
 COPY --chown=agent:agent voice_agent.py ./
 COPY --chown=agent:agent prompt/ ./prompt/
+COPY --chown=agent:agent models/ ./models/
 
 # Set environment variables
 ENV PATH="/app/.venv/bin:$PATH"
