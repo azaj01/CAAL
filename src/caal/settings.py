@@ -34,7 +34,6 @@ DEFAULT_SETTINGS = {
     "first_launch_completed": False,
     # Agent identity
     "agent_name": "Cal",
-    "tts_voice": "am_puck",
     "prompt": "default",  # "default" | "custom"
     "wake_greetings": [
         "Hey, what's up?",
@@ -49,6 +48,9 @@ DEFAULT_SETTINGS = {
     "stt_provider": "speaches",  # "speaches" | "groq"
     "llm_provider": "ollama",  # "ollama" | "groq"
     "tts_provider": "kokoro",  # "kokoro" | "piper"
+    # TTS settings - voice selection (Kokoro uses voice param, Piper bakes voice into model)
+    "tts_voice_kokoro": "am_puck",
+    "tts_voice_piper": "speaches-ai/piper-en_US-ljspeech-medium",
     "temperature": 0.7,
     # Ollama settings
     "ollama_host": "http://localhost:11434",

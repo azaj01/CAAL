@@ -16,6 +16,8 @@ export interface SetupData {
   groq_model: string;
   // TTS Provider
   tts_provider: 'kokoro' | 'piper';
+  tts_voice_kokoro: string;
+  tts_voice_piper: string;
   // Integrations
   hass_enabled: boolean;
   hass_host: string;
@@ -36,6 +38,8 @@ const INITIAL_DATA: SetupData = {
   groq_api_key: '',
   groq_model: '',
   tts_provider: 'kokoro',
+  tts_voice_kokoro: 'am_puck',
+  tts_voice_piper: 'speaches-ai/piper-en_US-ljspeech-medium',
   hass_enabled: false,
   hass_host: '',
   hass_token: '',

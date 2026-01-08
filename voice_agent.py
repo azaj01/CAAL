@@ -113,7 +113,10 @@ def get_runtime_settings() -> dict:
     user_settings = settings_module.load_user_settings()  # Only explicitly set values
 
     return {
-        "tts_voice": settings.get("tts_voice") or os.getenv("TTS_VOICE", "am_puck"),
+        # TTS settings
+        "tts_provider": user_settings.get("tts_provider") or os.getenv("TTS_PROVIDER", "kokoro"),
+        "tts_voice_kokoro": settings.get("tts_voice_kokoro") or os.getenv("TTS_VOICE", "am_puck"),
+        "tts_voice_piper": settings.get("tts_voice_piper") or "speaches-ai/piper-en_US-ljspeech-medium",
         # STT Provider settings
         "stt_provider": user_settings.get("stt_provider") or os.getenv("STT_PROVIDER", "speaches"),
         # LLM Provider settings - .env overrides default, user setting overrides .env
@@ -350,7 +353,10 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         logger.info("  STT: Groq (whisper-large-v3-turbo)")
     else:
         logger.info(f"  STT: {SPEACHES_URL} ({WHISPER_MODEL})")
-    logger.info(f"  TTS: {KOKORO_URL} ({runtime['tts_voice']})")
+    if runtime["tts_provider"] == "piper":
+        logger.info(f"  TTS: Piper ({runtime['tts_voice_piper']})")
+    else:
+        logger.info(f"  TTS: Kokoro ({runtime['tts_voice_kokoro']})")
     if runtime["llm_provider"] == "ollama":
         logger.info(
             f"  LLM: Ollama ({runtime['ollama_model']}, think={runtime['think']}, num_ctx={runtime['num_ctx']})"
@@ -448,18 +454,31 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         stt_instance = base_stt
         logger.info("  Wake word: disabled")
 
-    # Create session with Speaches STT and Kokoro TTS (both OpenAI-compatible)
+    # Create TTS instance based on provider
+    if runtime["tts_provider"] == "piper":
+        # Piper runs through Speaches container - voice is baked into model ID
+        tts_instance = openai.TTS(
+            base_url=f"{SPEACHES_URL}/v1",
+            api_key="not-needed",
+            model=runtime["tts_voice_piper"],  # e.g., "speaches-ai/piper-en_US-ljspeech-medium"
+            voice="default",  # Ignored by Piper but required by API
+        )
+    else:
+        # Kokoro uses separate model and voice params
+        tts_instance = openai.TTS(
+            base_url=f"{KOKORO_URL}/v1",
+            api_key="not-needed",
+            model=TTS_MODEL,
+            voice=runtime["tts_voice_kokoro"],
+        )
+
+    # Create session with STT and TTS (both OpenAI-compatible)
     logger.info(f"  STT instance type: {type(stt_instance).__name__}")
     logger.info(f"  STT capabilities: streaming={stt_instance.capabilities.streaming}")
     session = AgentSession(
         stt=stt_instance,
         llm=caal_llm,
-        tts=openai.TTS(
-            base_url=f"{KOKORO_URL}/v1",
-            api_key="not-needed",  # Kokoro doesn't require auth
-            model=TTS_MODEL,
-            voice=runtime["tts_voice"],
-        ),
+        tts=tts_instance,
         vad=silero.VAD.load(),
         allow_interruptions=False,  # Prevent background noise from interrupting agent
     )

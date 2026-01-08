@@ -18,7 +18,6 @@ import { Button } from '@/components/livekit/button';
 
 interface Settings {
   agent_name: string;
-  tts_voice: string;
   prompt: string;
   wake_greetings: string[];
   // Providers
@@ -27,6 +26,8 @@ interface Settings {
   ollama_model: string;
   groq_model: string;
   tts_provider: 'kokoro' | 'piper';
+  tts_voice_kokoro: string;
+  tts_voice_piper: string;
   // LLM settings
   temperature: number;
   num_ctx: number;
@@ -56,7 +57,6 @@ type TabId = 'agent' | 'prompt' | 'providers' | 'llm' | 'integrations' | 'wake';
 
 const DEFAULT_SETTINGS: Settings = {
   agent_name: 'Cal',
-  tts_voice: 'am_puck',
   prompt: 'default',
   wake_greetings: ["Hey, what's up?", "What's up?", 'How can I help?'],
   llm_provider: 'ollama',
@@ -64,6 +64,8 @@ const DEFAULT_SETTINGS: Settings = {
   ollama_model: '',
   groq_model: '',
   tts_provider: 'kokoro',
+  tts_voice_kokoro: 'am_puck',
+  tts_voice_piper: 'speaches-ai/piper-en_US-ljspeech-medium',
   temperature: 0.7,
   num_ctx: 8192,
   max_turns: 20,
@@ -385,6 +387,23 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     setSettings({ ...settings, wake_greetings: greetings });
   };
 
+  const handleTtsProviderChange = async (provider: 'kokoro' | 'piper') => {
+    if (provider === settings.tts_provider) return;
+
+    setSettings({ ...settings, tts_provider: provider });
+
+    // Fetch voices for the new provider
+    try {
+      const res = await fetch(`/api/voices?provider=${provider}`);
+      if (res.ok) {
+        const data = await res.json();
+        setVoices(data.voices || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch voices for provider:', err);
+    }
+  };
+
   // ---------------------------------------------------------------------------
   // Render helpers
   // ---------------------------------------------------------------------------
@@ -448,8 +467,17 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
       <div className="space-y-2">
         <label className="text-sm font-medium">Voice</label>
         <select
-          value={settings.tts_voice}
-          onChange={(e) => setSettings({ ...settings, tts_voice: e.target.value })}
+          value={
+            settings.tts_provider === 'piper' ? settings.tts_voice_piper : settings.tts_voice_kokoro
+          }
+          onChange={(e) =>
+            setSettings({
+              ...settings,
+              ...(settings.tts_provider === 'piper'
+                ? { tts_voice_piper: e.target.value }
+                : { tts_voice_kokoro: e.target.value }),
+            })
+          }
           className="border-input bg-background w-full rounded-lg border px-4 py-3 text-sm"
         >
           {voices.length > 0 ? (
@@ -459,7 +487,17 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               </option>
             ))
           ) : (
-            <option value={settings.tts_voice}>{settings.tts_voice}</option>
+            <option
+              value={
+                settings.tts_provider === 'piper'
+                  ? settings.tts_voice_piper
+                  : settings.tts_voice_kokoro
+              }
+            >
+              {settings.tts_provider === 'piper'
+                ? settings.tts_voice_piper
+                : settings.tts_voice_kokoro}
+            </option>
           )}
         </select>
       </div>
@@ -669,7 +707,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         </label>
         <div className="bg-muted inline-flex rounded-lg p-1">
           <button
-            onClick={() => setSettings({ ...settings, tts_provider: 'kokoro' })}
+            onClick={() => handleTtsProviderChange('kokoro')}
             className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
               settings.tts_provider === 'kokoro'
                 ? 'bg-background text-foreground shadow'
@@ -679,13 +717,21 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             Kokoro
           </button>
           <button
-            disabled
-            className="text-muted-foreground flex cursor-not-allowed items-center gap-2 rounded-md px-4 py-2 text-sm font-medium opacity-50"
+            onClick={() => handleTtsProviderChange('piper')}
+            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+              settings.tts_provider === 'piper'
+                ? 'bg-background text-foreground shadow'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
           >
             Piper
-            <span className="rounded bg-black/40 px-1.5 py-0.5 text-[10px] font-bold">SOON</span>
           </button>
         </div>
+        <p className="text-muted-foreground text-xs">
+          {settings.tts_provider === 'kokoro'
+            ? 'High-quality neural TTS (requires Kokoro container)'
+            : 'Lightweight CPU-friendly TTS with 35+ languages'}
+        </p>
       </div>
     </div>
   );

@@ -33,7 +33,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Agent settings fields
   String _agentName = 'Cal';
-  String _ttsVoice = 'am_puck';
+  String _ttsProvider = 'kokoro';
+  String _ttsVoiceKokoro = 'am_puck';
+  String _ttsVoicePiper = 'speaches-ai/piper-en_US-ljspeech-medium';
   String _model = 'ministral-3:8b';
   List<String> _wakeGreetings = ["Hey, what's up?", "What's up?", 'How can I help?'];
   double _temperature = 0.7;
@@ -132,7 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final results = await Future.wait([
         http.get(Uri.parse('$webhookUrl/settings')),
-        http.get(Uri.parse('$webhookUrl/voices')),
+        http.get(Uri.parse('$webhookUrl/voices?provider=$_ttsProvider')),
         http.get(Uri.parse('$webhookUrl/models')),
         http.get(Uri.parse('$webhookUrl/wake-word/models')),
       ]);
@@ -149,7 +151,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         setState(() {
           _serverConnected = true;
           _agentName = settings['agent_name'] ?? _agentName;
-          _ttsVoice = settings['tts_voice'] ?? _ttsVoice;
+          _ttsProvider = settings['tts_provider'] ?? _ttsProvider;
+          _ttsVoiceKokoro = settings['tts_voice_kokoro'] ?? _ttsVoiceKokoro;
+          _ttsVoicePiper = settings['tts_voice_piper'] ?? _ttsVoicePiper;
           _model = settings['model'] ?? _model;
           _wakeGreetings = List<String>.from(settings['wake_greetings'] ?? _wakeGreetings);
           _temperature = (settings['temperature'] ?? _temperature).toDouble();
@@ -195,6 +199,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _fetchVoices(String provider) async {
+    final webhookUrl = _webhookUrl;
+    if (webhookUrl.isEmpty) return;
+
+    try {
+      final res = await http.get(Uri.parse('$webhookUrl/voices?provider=$provider'));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() {
+          _voices = List<String>.from(data['voices'] ?? []);
+        });
+      }
+    } catch (e) {
+      // Silently fail - voices list will remain as-is
+    }
+  }
+
+  void _handleTtsProviderChange(String provider) {
+    if (provider == _ttsProvider) return;
+    setState(() {
+      _ttsProvider = provider;
+    });
+    unawaited(_fetchVoices(provider));
+  }
+
+  String get _currentVoice {
+    return _ttsProvider == 'piper' ? _ttsVoicePiper : _ttsVoiceKokoro;
+  }
+
+  void _setCurrentVoice(String voice) {
+    setState(() {
+      if (_ttsProvider == 'piper') {
+        _ttsVoicePiper = voice;
+      } else {
+        _ttsVoiceKokoro = voice;
+      }
+    });
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -214,7 +257,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         final settings = {
           'agent_name': _agentName,
-          'tts_voice': _ttsVoice,
+          'tts_provider': _ttsProvider,
+          'tts_voice_kokoro': _ttsVoiceKokoro,
+          'tts_voice_piper': _ttsVoicePiper,
           'model': _model,
           'wake_greetings': greetings,
           'temperature': _temperature,
@@ -387,11 +432,99 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: _agentName,
                     onChanged: (v) => setState(() => _agentName = v),
                   ),
+                  _buildLabel('TTS Engine'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => _handleTtsProviderChange('kokoro'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _ttsProvider == 'kokoro'
+                                  ? const Color(0xFF45997C).withValues(alpha: 0.2)
+                                  : const Color(0xFF2A2A2A),
+                              border: Border.all(
+                                color: _ttsProvider == 'kokoro'
+                                    ? const Color(0xFF45997C)
+                                    : Colors.white.withValues(alpha: 0.1),
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                bottomLeft: Radius.circular(8),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Kokoro',
+                                  style: TextStyle(
+                                    color: _ttsProvider == 'kokoro' ? Colors.white : Colors.white70,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'GPU neural TTS',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => _handleTtsProviderChange('piper'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _ttsProvider == 'piper'
+                                  ? const Color(0xFF45997C).withValues(alpha: 0.2)
+                                  : const Color(0xFF2A2A2A),
+                              border: Border.all(
+                                color: _ttsProvider == 'piper'
+                                    ? const Color(0xFF45997C)
+                                    : Colors.white.withValues(alpha: 0.1),
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                topRight: Radius.circular(8),
+                                bottomRight: Radius.circular(8),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Piper',
+                                  style: TextStyle(
+                                    color: _ttsProvider == 'piper' ? Colors.white : Colors.white70,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'CPU lightweight',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   _buildDropdown(
                     label: 'Voice',
-                    value: _ttsVoice,
-                    options: _voices.isNotEmpty ? _voices : [_ttsVoice],
-                    onChanged: (v) => setState(() => _ttsVoice = v ?? _ttsVoice),
+                    value: _currentVoice,
+                    options: _voices.isNotEmpty ? _voices : [_currentVoice],
+                    onChanged: (v) => _setCurrentVoice(v ?? _currentVoice),
                   ),
                   _buildDropdown(
                     label: 'Model',

@@ -424,13 +424,56 @@ async def save_prompt(req: PromptUpdateRequest) -> PromptResponse:
     )
 
 
+# Default Piper voices (model IDs from HuggingFace speaches-ai)
+# Piper bakes voice into model ID, so each "voice" is actually a model
+PIPER_VOICES = [
+    # English
+    "speaches-ai/piper-en_US-ljspeech-medium",
+    "speaches-ai/piper-en_US-hfc_female-medium",
+    "speaches-ai/piper-en_US-lessac-medium",
+    "speaches-ai/piper-en_GB-aru-medium",
+    "speaches-ai/piper-en_GB-alba-medium",
+    # German
+    "speaches-ai/piper-de_DE-eva_k-x_low",
+    "speaches-ai/piper-de_DE-kerstin-low",
+    "speaches-ai/piper-de_DE-thorsten-high",
+    # French
+    "speaches-ai/piper-fr_FR-mls-medium",
+    "speaches-ai/piper-fr_FR-siwis-medium",
+    # Spanish
+    "speaches-ai/piper-es_ES-davefx-medium",
+    "speaches-ai/piper-es_MX-ald-medium",
+    # Russian
+    "speaches-ai/piper-ru_RU-irina-medium",
+    # Other
+    "speaches-ai/piper-it_IT-riccardo-x_low",
+    "speaches-ai/piper-pl_PL-darkman-medium",
+    "speaches-ai/piper-pt_BR-faber-medium",
+    "speaches-ai/piper-sk_SK-lili-medium",
+    "speaches-ai/piper-uk_UA-lada-x_low",
+]
+
+
 @app.get("/voices", response_model=VoicesResponse)
-async def get_voices() -> VoicesResponse:
-    """Get available TTS voices from Kokoro.
+async def get_voices(provider: str | None = None) -> VoicesResponse:
+    """Get available TTS voices based on TTS provider.
+
+    Args:
+        provider: Optional provider override ("kokoro" or "piper").
+                  If not specified, uses current setting.
 
     Returns:
-        VoicesResponse with list of voice IDs
+        VoicesResponse with list of voice IDs (Kokoro) or model IDs (Piper)
     """
+    if provider is None:
+        settings = settings_module.load_settings()
+        provider = settings.get("tts_provider", "kokoro")
+
+    if provider == "piper":
+        # Piper voices are model IDs - return curated list
+        return VoicesResponse(voices=PIPER_VOICES)
+
+    # Kokoro - fetch from API
     kokoro_url = os.getenv("KOKORO_URL", "http://kokoro:8880")
 
     try:
