@@ -47,6 +47,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _wakeWordModel = 'models/hey_cal.onnx';
   double _wakeWordThreshold = 0.5;
   double _wakeWordTimeout = 3.0;
+  // Turn detection
+  bool _allowInterruptions = true;
+  double _minEndpointingDelay = 0.5;
 
   // Available options
   List<String> _voices = [];
@@ -165,6 +168,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _wakeWordModel = settings['wake_word_model'] ?? _wakeWordModel;
           _wakeWordThreshold = (settings['wake_word_threshold'] ?? _wakeWordThreshold).toDouble();
           _wakeWordTimeout = (settings['wake_word_timeout'] ?? _wakeWordTimeout).toDouble();
+          _allowInterruptions = settings['allow_interruptions'] ?? _allowInterruptions;
+          _minEndpointingDelay = (settings['min_endpointing_delay'] ?? _minEndpointingDelay).toDouble();
           _wakeGreetingsController.text = _wakeGreetings.join('\n');
         });
       }
@@ -272,6 +277,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           'wake_word_model': _wakeWordModel,
           'wake_word_threshold': _wakeWordThreshold,
           'wake_word_timeout': _wakeWordTimeout,
+          'allow_interruptions': _allowInterruptions,
+          'min_endpointing_delay': _minEndpointingDelay,
         };
 
         final res = await http.post(
@@ -623,6 +630,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  const Divider(color: Colors.white24, height: 24),
+                  // Turn Detection section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Allow Interruptions',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            'Interrupt the agent while speaking',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Switch(
+                        value: _allowInterruptions,
+                        onChanged: (v) => setState(() => _allowInterruptions = v),
+                        activeTrackColor: const Color(0xFF45997C),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildNumberField(
+                    label: 'Endpointing Delay (s)',
+                    value: _minEndpointingDelay,
+                    min: 0.1,
+                    max: 1.0,
+                    decimals: 1,
+                    onChanged: (v) => setState(() => _minEndpointingDelay = v),
+                  ),
+                  const Text(
+                    'How long to wait after you stop speaking',
+                    style: TextStyle(color: Colors.white38, fontSize: 11),
                   ),
                 ]),
 

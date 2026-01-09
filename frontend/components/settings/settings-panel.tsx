@@ -45,6 +45,9 @@ interface Settings {
   wake_word_model: string;
   wake_word_threshold: number;
   wake_word_timeout: number;
+  // Turn detection
+  allow_interruptions: boolean;
+  min_endpointing_delay: number;
 }
 
 type TestStatus = 'idle' | 'testing' | 'success' | 'error';
@@ -80,6 +83,8 @@ const DEFAULT_SETTINGS: Settings = {
   wake_word_model: 'models/hey_cal.onnx',
   wake_word_threshold: 0.5,
   wake_word_timeout: 3.0,
+  allow_interruptions: true,
+  min_endpointing_delay: 0.5,
 };
 
 const DEFAULT_PROMPT = `# Voice Assistant
@@ -811,6 +816,52 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           }
           className="border-input bg-background w-full rounded-lg border px-4 py-3 text-sm"
         />
+      </div>
+
+      {/* Turn Detection Section */}
+      <div className="border-t pt-6">
+        <h3 className="mb-4 text-sm font-semibold">Turn Detection</h3>
+        <p className="text-muted-foreground mb-4 text-xs">
+          Control how the agent detects when you&apos;re done speaking
+        </p>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-sm font-medium">Allow Interruptions</label>
+              <p className="text-muted-foreground text-xs">Interrupt the agent while speaking</p>
+            </div>
+            <Toggle
+              enabled={settings.allow_interruptions}
+              onToggle={() =>
+                setSettings({ ...settings, allow_interruptions: !settings.allow_interruptions })
+              }
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Endpointing Delay</label>
+              <span className="text-muted-foreground text-sm">
+                {settings.min_endpointing_delay}s
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0.1"
+              max="1.0"
+              step="0.1"
+              value={settings.min_endpointing_delay}
+              onChange={(e) =>
+                setSettings({ ...settings, min_endpointing_delay: parseFloat(e.target.value) })
+              }
+              className="bg-muted accent-primary h-2 w-full cursor-pointer appearance-none rounded-lg"
+            />
+            <p className="text-muted-foreground text-xs">
+              How long to wait after you stop speaking before responding
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
