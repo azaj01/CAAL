@@ -5,8 +5,11 @@
  * All sensitive data is stripped in the browser before transmission.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type WorkflowData = any; // n8n workflow structure is dynamic
+
 export interface SanitizationResult {
-  sanitized: any; // cleaned workflow
+  sanitized: WorkflowData;
   detected: {
     credentials: Array<{
       credential_type: string;
@@ -50,7 +53,7 @@ interface ResourceLocator {
 }
 
 function findResourceLocators(
-  obj: any,
+  obj: WorkflowData,
   path = '',
   results: ResourceLocator[] = []
 ): ResourceLocator[] {
@@ -87,7 +90,7 @@ function convertResourceLocatorToId(variablePlaceholder: string) {
 /**
  * Set a nested property by path (e.g., "nodes.0.parameters.calendar")
  */
-function setNestedProperty(obj: any, path: string, value: any): void {
+function setNestedProperty(obj: WorkflowData, path: string, value: unknown): void {
   const parts = path.split('.');
   let current = obj;
   for (let i = 0; i < parts.length - 1; i++) {
@@ -129,16 +132,14 @@ function detectSecrets(workflowStr: string): {
  */
 function detectUrls(workflowStr: string): string[] {
   const urlMatches = workflowStr.match(URL_PATTERN) || [];
-  const uniqueUrls = [...new Set(urlMatches)].filter(
-    (url) => !LOCALHOST_PATTERN.test(url)
-  );
+  const uniqueUrls = [...new Set(urlMatches)].filter((url) => !LOCALHOST_PATTERN.test(url));
   return uniqueUrls;
 }
 
 /**
  * Extract credential types from workflow
  */
-function extractCredentials(workflow: any): Array<{
+function extractCredentials(workflow: WorkflowData): Array<{
   credential_type: string;
   name: string;
 }> {
@@ -154,6 +155,7 @@ function extractCredentials(workflow: any): Array<{
           credentialTypes.add(credType);
           credentials.push({
             credential_type: credType,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             name: (credInfo as any)?.name || credType,
           });
         }
@@ -165,33 +167,20 @@ function extractCredentials(workflow: any): Array<{
 }
 
 /**
- * Strip secrets from workflow JSON string
- * This is a safety measure - blocks submission if secrets detected
- */
-function stripSecrets(workflowStr: string): string {
-  let cleaned = workflowStr;
-
-  for (const { regex } of SECRET_PATTERNS) {
-    regex.lastIndex = 0;
-    cleaned = cleaned.replace(regex, '[REDACTED]');
-  }
-
-  return cleaned;
-}
-
-/**
  * Nullify credential IDs but keep names for reference
  */
-function nullifyCredentialIds(workflow: any): any {
+function nullifyCredentialIds(workflow: WorkflowData): WorkflowData {
   const toolName = workflow.name?.replace(/[^a-zA-Z0-9_-]/g, '-') || 'tool';
 
   if (!workflow.nodes) return workflow;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   workflow.nodes = workflow.nodes.map((node: any) => {
     if (node.credentials) {
       for (const [credType, credInfo] of Object.entries(node.credentials)) {
         node.credentials[credType] = {
           id: null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           name: (credInfo as any)?.name || `${toolName}_credential`,
         };
       }
@@ -205,7 +194,7 @@ function nullifyCredentialIds(workflow: any): any {
 /**
  * Main sanitization function
  */
-export function sanitizeWorkflow(workflow: any): SanitizationResult {
+export function sanitizeWorkflow(workflow: WorkflowData): SanitizationResult {
   const warnings: string[] = [];
 
   // 1. Detect secrets (BEFORE stripping)
@@ -216,7 +205,7 @@ export function sanitizeWorkflow(workflow: any): SanitizationResult {
   if (secrets.found.length > 0) {
     throw new Error(
       `Cannot submit workflow with secrets detected: ${secrets.found.join(', ')}. ` +
-      `Please remove secrets from your n8n workflow and export again.`
+        `Please remove secrets from your n8n workflow and export again.`
     );
   }
 
@@ -226,7 +215,9 @@ export function sanitizeWorkflow(workflow: any): SanitizationResult {
     // Generate variable name from URL (e.g., http://192.168.1.100:5000 -> SERVICE_URL)
     const hostname = url.replace(/https?:\/\//, '').split(':')[0];
     const isIp = /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
-    const varName = isIp ? 'SERVICE_URL' : hostname.toUpperCase().replace(/[^A-Z0-9]/g, '_') + '_URL';
+    const varName = isIp
+      ? 'SERVICE_URL'
+      : hostname.toUpperCase().replace(/[^A-Z0-9]/g, '_') + '_URL';
 
     return {
       name: varName,
@@ -265,11 +256,7 @@ export function sanitizeWorkflow(workflow: any): SanitizationResult {
   for (let i = 0; i < resourceLocators.length; i++) {
     const rl = resourceLocators[i];
     const variable = rlVariables[i];
-    setNestedProperty(
-      sanitized,
-      rl.path,
-      convertResourceLocatorToId(`\${${variable.name}}`)
-    );
+    setNestedProperty(sanitized, rl.path, convertResourceLocatorToId(`\${${variable.name}}`));
   }
 
   // 8. Nullify credential IDs
@@ -283,13 +270,13 @@ export function sanitizeWorkflow(workflow: any): SanitizationResult {
 
   // 10. Check for webhook description
   const webhookNode = sanitized.nodes?.find(
-    (n: any) =>
-      n.type === 'n8n-nodes-base.webhook' || n.type?.includes('webhook')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (n: any) => n.type === 'n8n-nodes-base.webhook' || n.type?.includes('webhook')
   );
 
   if (webhookNode && !webhookNode.notes) {
     warnings.push(
-      'No webhook description found. Add a description to the webhook node\'s notes in n8n.'
+      "No webhook description found. Add a description to the webhook node's notes in n8n."
     );
   }
 
