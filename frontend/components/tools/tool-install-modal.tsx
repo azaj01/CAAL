@@ -40,6 +40,8 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
             credentials: creds,
             toolName: mf.name,
             voiceTrigger: mf.voice_triggers[0],
+            registryId: mf.id,
+            registryVersion: mf.version,
           }),
         });
 

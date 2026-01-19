@@ -8,6 +8,8 @@ interface InstallRequest {
   credentials: Record<string, string>;
   toolName: string;
   voiceTrigger?: string;
+  registryId?: string;  // CAAL registry ID for tracking
+  registryVersion?: string;  // Registry version for update detection
 }
 
 function substituteVariables(
@@ -49,7 +51,8 @@ function extractN8nBaseUrl(mcpUrl: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body: InstallRequest = await request.json();
-    const { workflow, variables, credentials, toolName, voiceTrigger } = body;
+    const { workflow, variables, credentials, toolName, voiceTrigger, registryId, registryVersion } =
+      body;
 
     if (!workflow || !toolName) {
       return NextResponse.json({ error: 'Missing workflow or toolName' }, { status: 400 });
@@ -149,6 +152,25 @@ export async function POST(request: NextRequest) {
       // Don't fail - workflow is created, just not activated
     } else {
       console.log('[/api/tools/install] Workflow activated successfully');
+    }
+
+    // Cache registry entry for tracking (registry tools only)
+    if (registryId) {
+      try {
+        await fetch(`${WEBHOOK_URL}/cache-registry-entry`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            n8n_workflow_id: workflowId,
+            registry_id: registryId,
+            version: registryVersion || null,
+          }),
+        });
+        console.log('[/api/tools/install] Cached registry entry:', registryId, registryVersion);
+      } catch (e) {
+        // Don't fail install if cache fails
+        console.warn('[/api/tools/install] Failed to cache registry entry:', e);
+      }
     }
 
     // Reload tools in agent (will work if session is active)

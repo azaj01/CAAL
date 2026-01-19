@@ -16,10 +16,8 @@ interface N8nWorkflow {
   tags: string[];
   createdAt: string;
   updatedAt: string;
-  settings?: {
-    caal_registry_id?: string;
-    caal_registry_version?: string;
-  };
+  caal_registry_id?: string | null;
+  caal_registry_version?: string | null;
 }
 
 type WorkflowStatus =
@@ -77,8 +75,8 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
 
   const getWorkflowStatus = useCallback(
     (workflow: N8nWorkflow): WorkflowStatus => {
-      const registryId = workflow.settings?.caal_registry_id;
-      const registryVersion = workflow.settings?.caal_registry_version;
+      const registryId = workflow.caal_registry_id;
+      const registryVersion = workflow.caal_registry_version;
 
       if (!registryId) {
         // No registry ID = custom workflow
@@ -200,7 +198,7 @@ export function InstalledToolsView({ registryTools, n8nEnabled }: InstalledTools
   const handleCardClick = useCallback(
     (workflow: N8nWorkflow) => {
       // Use registry ID to find matching registry tool
-      const registryId = workflow.settings?.caal_registry_id;
+      const registryId = workflow.caal_registry_id;
       const matchingTool = registryId ? registryTools.find((tool) => tool.id === registryId) : null;
 
       if (matchingTool) {
