@@ -65,7 +65,7 @@ const DEFAULT_SETTINGS: Settings = {
   tts_provider: 'kokoro',
   tts_voice_kokoro: 'am_puck',
   tts_voice_piper: 'speaches-ai/piper-en_US-ryan-high',
-  temperature: 0.7,
+  temperature: 0.15,
   num_ctx: 8192,
   max_turns: 20,
   tool_cache_size: 3,
@@ -792,7 +792,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           type="range"
           min="0"
           max="2"
-          step="0.1"
+          step="0.05"
           value={settings.temperature}
           onChange={(e) => setSettings({ ...settings, temperature: parseFloat(e.target.value) })}
           className="bg-muted accent-primary h-2 w-full cursor-pointer appearance-none rounded-lg"

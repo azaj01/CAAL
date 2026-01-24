@@ -51,7 +51,7 @@ DEFAULT_SETTINGS = {
     # TTS settings - voice selection (Kokoro uses voice param, Piper bakes voice into model)
     "tts_voice_kokoro": "am_puck",
     "tts_voice_piper": "speaches-ai/piper-en_US-ryan-high",
-    "temperature": 0.7,
+    "temperature": 0.15,
     # Ollama settings
     "ollama_host": "http://localhost:11434",
     "ollama_model": "ministral-3:8b",
