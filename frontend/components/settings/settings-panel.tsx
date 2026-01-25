@@ -56,6 +56,8 @@ interface Settings {
   // Turn detection
   allow_interruptions: boolean;
   min_endpointing_delay: number;
+  // Language
+  language: string;
 }
 
 type TestStatus = 'idle' | 'testing' | 'success' | 'error';
@@ -96,6 +98,8 @@ const DEFAULT_SETTINGS: Settings = {
   wake_word_timeout: 3.0,
   allow_interruptions: true,
   min_endpointing_delay: 0.5,
+  // Language
+  language: 'en',
 };
 
 const DEFAULT_PROMPT = `# Voice Assistant

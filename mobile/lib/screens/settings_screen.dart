@@ -70,6 +70,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double _wakeWordThreshold = 0.5;
   double _wakeWordTimeout = 3.0;
 
+  // Language
+  String _language = 'en';
+
   // Available options
   List<String> _voices = [];
   List<String> _ollamaModels = [];
@@ -233,6 +236,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _wakeWordModel = settings['wake_word_model'] ?? _wakeWordModel;
           _wakeWordThreshold = (settings['wake_word_threshold'] ?? _wakeWordThreshold).toDouble();
           _wakeWordTimeout = (settings['wake_word_timeout'] ?? _wakeWordTimeout).toDouble();
+
+          // Language
+          _language = settings['language'] ?? 'en';
         });
       }
 
@@ -521,6 +527,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           'wake_word_model': _wakeWordModel,
           'wake_word_threshold': _wakeWordThreshold,
           'wake_word_timeout': _wakeWordTimeout,
+
+          // Language
+          'language': _language,
         };
 
         final res = await http.post(
