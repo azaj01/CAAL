@@ -28,10 +28,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Language setting is readable by frontend, mobile, and agent components
   3. Existing English-only installations continue working without any configuration changes
   4. Default language is English for new installations
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 01-01: Settings schema and propagation
+- [ ] 01-01-PLAN.md - Add global language setting to backend, frontend, and mobile
 
 ### Phase 2: Frontend i18n
 **Goal**: Users can interact with the web UI entirely in their configured language
@@ -88,7 +88,7 @@ Note: Phases 2 and 3 can run in parallel after Phase 1 completes.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/1 | Not started | - |
+| 1. Foundation | 0/1 | Planned | - |
 | 2. Frontend i18n | 0/2 | Not started | - |
 | 3. Mobile i18n | 0/2 | Not started | - |
 | 4. Voice Pipeline | 0/3 | Not started | - |
