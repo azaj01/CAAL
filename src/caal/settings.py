@@ -46,6 +46,8 @@ DEFAULT_SETTINGS = {
         "Yo!",
         "What's up?",
     ],
+    # Language setting
+    "language": "en",  # ISO 639-1: "en" | "fr"
     # Provider settings (UI sets both together, but stored separately for power users)
     "stt_provider": "speaches",  # "speaches" | "groq"
     "llm_provider": "ollama",  # "ollama" | "groq"

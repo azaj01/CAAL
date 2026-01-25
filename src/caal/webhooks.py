@@ -820,6 +820,8 @@ class SetupCompleteRequest(BaseModel):
     tts_provider: str = "kokoro"  # "kokoro" | "piper"
     tts_voice_kokoro: str | None = None
     tts_voice_piper: str | None = None
+    # Language setting (optional, defaults to "en")
+    language: str | None = None
     # Integrations (optional) - None means "don't change"
     hass_enabled: bool | None = None
     hass_host: str | None = None
@@ -939,6 +941,10 @@ async def complete_setup(req: SetupCompleteRequest) -> SetupCompleteResponse:
             current["tts_voice_kokoro"] = req.tts_voice_kokoro
         if req.tts_voice_piper:
             current["tts_voice_piper"] = req.tts_voice_piper
+
+        # Language setting
+        if req.language:
+            current["language"] = req.language
 
         # Mark setup as complete
         current["first_launch_completed"] = True
