@@ -583,6 +583,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Downloading voice model...'**
   String get downloadingVoice;
+
+  /// Text input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Message...'**
+  String get messageHint;
+
+  /// Tool details sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Tool Parameters'**
+  String get toolParameters;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

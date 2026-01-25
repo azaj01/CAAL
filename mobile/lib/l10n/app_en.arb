@@ -245,5 +245,11 @@
   "@failedToSaveAgent": { "description": "Agent save error", "placeholders": { "code": { "type": "int" } } },
 
   "downloadingVoice": "Downloading voice model...",
-  "@downloadingVoice": { "description": "Voice download status" }
+  "@downloadingVoice": { "description": "Voice download status" },
+
+  "messageHint": "Message...",
+  "@messageHint": { "description": "Text input placeholder" },
+
+  "toolParameters": "Tool Parameters",
+  "@toolParameters": { "description": "Tool details sheet title" }
 }

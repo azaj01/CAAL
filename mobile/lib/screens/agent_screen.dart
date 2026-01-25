@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../controllers/app_ctrl.dart';
 import '../controllers/wake_word_state_ctrl.dart';
+import '../l10n/app_localizations.dart';
 import '../support/agent_selector.dart';
 import '../widgets/agent_layout_switcher.dart';
 import '../widgets/camera_toggle_button.dart';
@@ -146,13 +147,16 @@ class AgentScreen extends StatelessWidget {
                 ),
               ),
             ),
-            buildScreenShareView: (ctx) => Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.3),
-              ),
-              child: const Text('Screenshare View'),
-            ),
+            buildScreenShareView: (ctx) {
+              final l10n = AppLocalizations.of(ctx);
+              return Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.3),
+                ),
+                child: Text(l10n.screenshareView),
+              );
+            },
             transcriptionsBuilder: (ctx) => Column(
               mainAxisSize: MainAxisSize.max,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -254,6 +258,7 @@ class _AgentListeningPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -272,21 +277,21 @@ class _AgentListeningPlaceholder extends StatelessWidget {
           // Server-side wake word detection is active
           if (wakeWordState == WakeWordState.listening) {
             icon = Icons.hearing;
-            statusText = 'Say "Hey Jarvis"';
-            subtitle = 'Waiting for wake word...';
+            statusText = l10n.sayWakeWord;
+            subtitle = l10n.waitingForWakeWord;
             iconColor = colorScheme.outline;
           } else {
             // active state
             icon = Icons.graphic_eq;
-            statusText = 'Agent is listening';
+            statusText = l10n.agentIsListening;
             subtitle = null;
             iconColor = colorScheme.primary.withValues(alpha: 0.7);
           }
         } else {
           // No server-side wake word, normal always-listening mode
           icon = Icons.graphic_eq;
-          statusText = 'Agent is listening';
-          subtitle = canListen ? null : 'Start a conversation to see messages here.';
+          statusText = l10n.agentIsListening;
+          subtitle = canListen ? null : l10n.startConversation;
           iconColor = colorScheme.primary.withValues(alpha: 0.7);
         }
 

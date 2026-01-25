@@ -265,4 +265,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get downloadingVoice => 'Downloading voice model...';
+
+  @override
+  String get messageHint => 'Message...';
+
+  @override
+  String get toolParameters => 'Tool Parameters';
 }

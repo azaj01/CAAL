@@ -267,4 +267,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get downloadingVoice => 'Telechargement du modele vocal...';
+
+  @override
+  String get messageHint => 'Message...';
+
+  @override
+  String get toolParameters => 'Parametres de l\'outil';
 }

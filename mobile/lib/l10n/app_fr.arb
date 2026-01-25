@@ -82,5 +82,7 @@
   "failedToLoad": "Echec du chargement des parametres : {error}",
   "failedToSave": "Echec de l'enregistrement : {error}",
   "failedToSaveAgent": "Echec de l'enregistrement des parametres de l'agent : {code}",
-  "downloadingVoice": "Telechargement du modele vocal..."
+  "downloadingVoice": "Telechargement du modele vocal...",
+  "messageHint": "Message...",
+  "toolParameters": "Parametres de l'outil"
 }
