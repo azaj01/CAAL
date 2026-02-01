@@ -69,7 +69,7 @@ export function LanguageSelector({ onSelect }: LanguageSelectorProps) {
         <select
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
-          className="w-full rounded-md border border-[var(--border-primary)] bg-[var(--surface-1)] px-3 py-2.5 text-sm text-[var(--text-primary)]"
+          className="select-field text-foreground w-full px-4 py-3 text-sm"
         >
           {LANGUAGES.map((lang) => (
             <option key={lang.code} value={lang.code}>
