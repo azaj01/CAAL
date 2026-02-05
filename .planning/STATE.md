@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-05)
 
 ## Current Position
 
-Phase: 5 of 7 (Extract & Add EN Keys) — VERIFIED ✓
+Phase: 6 of 7 (French & Italian Translations)
 Plan: 1 of 1 complete
-Status: Phase verified, ready for Phase 6
-Last activity: 2026-02-05 — Phase 5 verified
+Status: Phase complete, ready for Phase 7 verification
+Last activity: 2026-02-05 — Completed 06-01-PLAN.md
 
-Progress: [███░░░░░░░] 33% (1/3 phases)
+Progress: [██████░░░░] 66% (2/3 phases)
 
 ## Accumulated Context
 
@@ -30,6 +30,10 @@ Progress: [███░░░░░░░] 33% (1/3 phases)
 - Tools.workflow.* namespace for detail modal strings
 - Arrow symbol in variable hints is UI formatting, not translatable text
 
+(Phase 06-01)
+- French share/workflow translations use tu/toi register consistently
+- Technical terms (n8n, workflow, credentials, ID, URL) kept in English for clarity
+
 ### Pending Todos
 
 None.
@@ -40,6 +44,6 @@ None open.
 
 ## Session Continuity
 
-Last session: 2026-02-05T04:03:56Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-02-05T05:18:00Z
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None
