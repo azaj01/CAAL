@@ -31,9 +31,9 @@ Requirements for Tool Registry i18n completion.
 
 ### Quality Assurance
 
-- [ ] **QA-01**: No hardcoded English strings remain in target components
-- [ ] **QA-02**: Translation style consistent with existing messages
-- [ ] **QA-03**: All three languages (EN/FR/IT) have identical key structure
+- [x] **QA-01**: No hardcoded English strings remain in target components
+- [x] **QA-02**: Translation style consistent with existing messages
+- [x] **QA-03**: All three languages (EN/FR/IT) have identical key structure
 
 ## Out of Scope
 
@@ -58,9 +58,9 @@ Requirements for Tool Registry i18n completion.
 | FR-03 | Phase 6 | Complete |
 | IT-01 | Phase 6 | Complete |
 | IT-02 | Phase 6 | Complete |
-| QA-01 | Phase 7 | Pending |
-| QA-02 | Phase 7 | Pending |
-| QA-03 | Phase 7 | Pending |
+| QA-01 | Phase 7 | Complete |
+| QA-02 | Phase 7 | Complete |
+| QA-03 | Phase 7 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 13 total
@@ -69,4 +69,4 @@ Requirements for Tool Registry i18n completion.
 
 ---
 *Requirements defined: 2026-02-05*
-*Last updated: 2026-02-05 after Phase 6 complete*
+*Last updated: 2026-02-05 — Milestone v1.1 complete (all 13 requirements verified)*
