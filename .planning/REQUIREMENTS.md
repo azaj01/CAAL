@@ -9,14 +9,14 @@ Requirements for Tool Registry i18n completion.
 
 ### Internationalization Infrastructure
 
-- [ ] **I18N-01**: workflow-submission-dialog.tsx uses useTranslations hook
-- [ ] **I18N-02**: workflow-detail-modal.tsx uses useTranslations hook
-- [ ] **I18N-03**: All hardcoded strings extracted to message keys
+- [x] **I18N-01**: workflow-submission-dialog.tsx uses useTranslations hook
+- [x] **I18N-02**: workflow-detail-modal.tsx uses useTranslations hook
+- [x] **I18N-03**: All hardcoded strings extracted to message keys
 
 ### English Message Keys
 
-- [ ] **EN-01**: Tools.share.* keys added to en.json for submission dialog
-- [ ] **EN-02**: Tools.workflow.* keys added to en.json for detail modal
+- [x] **EN-01**: Tools.share.* keys added to en.json for submission dialog
+- [x] **EN-02**: Tools.workflow.* keys added to en.json for detail modal
 
 ### French Translations
 
@@ -48,11 +48,11 @@ Requirements for Tool Registry i18n completion.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| I18N-01 | Phase 5 | Pending |
-| I18N-02 | Phase 5 | Pending |
-| I18N-03 | Phase 5 | Pending |
-| EN-01 | Phase 5 | Pending |
-| EN-02 | Phase 5 | Pending |
+| I18N-01 | Phase 5 | Complete |
+| I18N-02 | Phase 5 | Complete |
+| I18N-03 | Phase 5 | Complete |
+| EN-01 | Phase 5 | Complete |
+| EN-02 | Phase 5 | Complete |
 | FR-01 | Phase 6 | Pending |
 | FR-02 | Phase 6 | Pending |
 | FR-03 | Phase 6 | Pending |
@@ -69,4 +69,4 @@ Requirements for Tool Registry i18n completion.
 
 ---
 *Requirements defined: 2026-02-05*
-*Last updated: 2026-02-05 after initial definition*
+*Last updated: 2026-02-05 after Phase 5 complete*
