@@ -225,6 +225,18 @@
       "preparingSubmission": "Preparing submission...",
       "continueButton": "Continue to Submission Form"
     },
+    "workflow": {
+      "customToolLabel": "Custom Tool",
+      "statusLabel": "Status",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "tagsLabel": "Tags",
+      "createdLabel": "Created",
+      "lastUpdatedLabel": "Last Updated",
+      "n8nWorkflowLabel": "n8n Workflow",
+      "unpublishedInfo": "This is a custom tool not published to the CAAL Tool Registry. Share it to help others discover and use this tool. All keys, ids, and private URLs will be stripped automatically.",
+      "shareButton": "Share to Registry"
+    },
     "status": {
       "initialTooltip": "Tool status",
       "toolUsedTooltip": "Tool: {names}",
