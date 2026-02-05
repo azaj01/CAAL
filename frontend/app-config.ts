@@ -11,7 +11,6 @@ export interface AppConfig {
   isPreConnectBufferEnabled: boolean;
 
   logo: string;
-  startButtonText: string;
   theme?: ThemeName;  // Use theme system instead of individual accent colors
 
   // Legacy support - deprecated, use theme instead
@@ -36,7 +35,6 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
 
   logo: '/cwl-logo-round.png',
   theme: 'midnight',  // Use Midnight theme
-  startButtonText: 'Talk to CAAL',
 
   // for LiveKit Cloud Sandbox
   sandboxId: undefined,

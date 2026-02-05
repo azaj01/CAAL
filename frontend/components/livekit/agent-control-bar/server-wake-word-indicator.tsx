@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslations } from 'next-intl';
 import { Ear, EarSlash } from '@phosphor-icons/react/dist/ssr';
 import { Tooltip } from '@/components/ui/tooltip';
 import { useWakeWordState } from '@/hooks/useWakeWordState';
@@ -29,6 +30,7 @@ function formatWakeWordName(modelPath: string): string {
  * This replaces the client-side Picovoice toggle - server controls the state.
  */
 export function ServerWakeWordIndicator({ className }: { className?: string }) {
+  const t = useTranslations('ControlBar');
   const state = useWakeWordState();
   const [wakeWordName, setWakeWordName] = React.useState<string>('');
 
@@ -51,10 +53,10 @@ export function ServerWakeWordIndicator({ className }: { className?: string }) {
   const IconComponent = isDisabled ? EarSlash : Ear;
 
   const title = isDisabled
-    ? 'Wake word detection disabled'
+    ? t('wakeWordDisabled')
     : isSleeping
-      ? `Waiting for wake word - say "${wakeWordName}"`
-      : 'Listening - speak now';
+      ? t('wakeWordWaiting', { wakeWord: wakeWordName })
+      : t('wakeWordListening');
 
   return (
     <Tooltip content={title}>

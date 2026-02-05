@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ArrowClockwise, Warning } from '@phosphor-icons/react/dist/ssr';
 import { type SanitizationResult, sanitizeWorkflow } from '@/lib/workflow-sanitizer';
 import type { ToolIndexEntry } from '@/types/tools';
@@ -36,6 +37,8 @@ export function InstalledToolsView({
   n8nEnabled,
   searchQuery = '',
 }: InstalledToolsViewProps) {
+  const t = useTranslations('Tools');
+  const tCommon = useTranslations('Common');
   const [workflows, setWorkflows] = useState<N8nWorkflow[]>([]);
   const [n8nBaseUrl, setN8nBaseUrl] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -52,7 +55,7 @@ export function InstalledToolsView({
 
   const fetchWorkflows = useCallback(async () => {
     if (!n8nEnabled) {
-      setError('n8n is not enabled. Configure n8n in Settings to see installed tools.');
+      setError(t('installed.n8nDisabled'));
       return;
     }
 
@@ -254,7 +257,7 @@ export function InstalledToolsView({
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <ArrowClockwise className="h-8 w-8 animate-spin text-blue-500" />
-        <p className="text-muted-foreground mt-4">Loading installed tools...</p>
+        <p className="text-muted-foreground mt-4">{t('installed.loading')}</p>
       </div>
     );
   }
@@ -269,7 +272,7 @@ export function InstalledToolsView({
           onClick={fetchWorkflows}
           className="bg-muted hover:bg-muted/80 mt-4 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
         >
-          Retry
+          {tCommon('retry')}
         </button>
       </div>
     );
@@ -279,7 +282,7 @@ export function InstalledToolsView({
   if (workflows.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground">No workflows installed in n8n</p>
+        <p className="text-muted-foreground">{t('installed.emptyState')}</p>
       </div>
     );
   }
@@ -288,7 +291,9 @@ export function InstalledToolsView({
   if (filteredWorkflows.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground">No tools match &quot;{searchQuery}&quot;</p>
+        <p className="text-muted-foreground">
+          {t('installed.noSearchResults', { query: searchQuery })}
+        </p>
       </div>
     );
   }

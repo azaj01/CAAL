@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/livekit/button';
 import { IntegrationsStep } from './integrations-step';
 import { ProviderStep } from './provider-step';
@@ -50,9 +51,33 @@ const INITIAL_DATA: SetupData = {
 
 const TOTAL_STEPS = 3;
 
+// Per-language Piper voice mapping (mirrors PIPER_VOICE_MAP in settings.py)
+const PIPER_MODELS: Record<string, string> = {
+  fr: 'speaches-ai/piper-fr_FR-siwis-medium',
+  it: 'speaches-ai/piper-it_IT-paola-medium',
+};
+
 export function SetupWizard({ onComplete }: SetupWizardProps) {
+  const t = useTranslations('Setup');
+  const tCommon = useTranslations('Common');
+  const tStatus = useTranslations('Settings.status');
+
   const [step, setStep] = useState(1);
-  const [data, setData] = useState<SetupData>(INITIAL_DATA);
+  const [data, setData] = useState<SetupData>(() => {
+    // Read language from cookie to pre-select appropriate TTS provider/voice
+    const locale =
+      typeof document !== 'undefined'
+        ? document.cookie.match(/CAAL_LOCALE=(\w+)/)?.[1] || 'en'
+        : 'en';
+
+    if (locale === 'en') return INITIAL_DATA;
+
+    return {
+      ...INITIAL_DATA,
+      tts_provider: 'piper' as const,
+      tts_voice_piper: PIPER_MODELS[locale] || INITIAL_DATA.tts_voice_piper,
+    };
+  });
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +137,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
       // Download Piper model if using Piper
       if (finalData.tts_provider === 'piper' && finalData.tts_voice_piper) {
-        setSaveStatus('Downloading voice model...');
+        setSaveStatus(tStatus('downloadingVoice'));
         await fetch('/api/download-piper-model', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -150,11 +175,11 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   const getStepTitle = () => {
     switch (step) {
       case 1:
-        return 'Choose your AI provider';
+        return t('step1Title');
       case 2:
-        return 'Choose your voice';
+        return t('step2Title');
       case 3:
-        return 'Configure integrations';
+        return t('step3Title');
       default:
         return '';
     }
@@ -167,9 +192,9 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       <div className="bg-background border-input dark:border-muted flex max-h-[85vh] w-full max-w-lg flex-col rounded-lg border shadow-xl">
         {/* Header */}
         <div className="border-input dark:border-muted shrink-0 border-b p-4">
-          <h2 className="text-lg font-semibold">Welcome to CAAL</h2>
+          <h2 className="text-lg font-semibold">{t('welcome')}</h2>
           <p className="text-muted-foreground text-sm">
-            Step {step} of {TOTAL_STEPS} &mdash; {getStepTitle()}
+            {t('stepOf', { current: step, total: TOTAL_STEPS })} &mdash; {getStepTitle()}
           </p>
           {/* Progress bar */}
           <div className="bg-muted mt-3 h-1 w-full rounded-full">
@@ -194,18 +219,18 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           <div>
             {step > 1 && (
               <Button variant="secondary" onClick={handleBack} disabled={saving}>
-                Back
+                {tCommon('back')}
               </Button>
             )}
           </div>
           <div className="flex gap-2">
             {isLastStep ? (
               <Button variant="primary" onClick={handleComplete} disabled={saving || !canProceed()}>
-                {saving ? saveStatus || 'Saving...' : 'Finish Setup'}
+                {saving ? saveStatus || tCommon('saving') : t('finishSetup')}
               </Button>
             ) : (
               <Button variant="primary" onClick={handleNext} disabled={!canProceed()}>
-                Continue
+                {tCommon('continue')}
               </Button>
             )}
           </div>

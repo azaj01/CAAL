@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../l10n/app_localizations.dart';
 import '../services/config_service.dart';
 
 /// Setup screen for initial server URL configuration.
@@ -22,11 +23,18 @@ class SetupScreen extends StatefulWidget {
   State<SetupScreen> createState() => _SetupScreenState();
 }
 
+enum _StatusKey {
+  serverUrlInvalid,
+  completeWizardFirst,
+  couldNotReach,
+  couldNotConnect,
+}
+
 class _SetupScreenState extends State<SetupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _serverUrlController = TextEditingController();
   bool _isSaving = false;
-  String? _statusMessage;
+  _StatusKey? _statusKey;
 
   @override
   void initState() {
@@ -53,14 +61,14 @@ class _SetupScreenState extends State<SetupScreen> {
 
     setState(() {
       _isSaving = true;
-      _statusMessage = null;
+      _statusKey = null;
     });
 
     try {
       // Check if wizard has been completed on the server
       final webhookUrl = _webhookUrl;
       if (webhookUrl.isEmpty) {
-        setState(() => _statusMessage = 'Invalid server URL');
+        setState(() => _statusKey = _StatusKey.serverUrlInvalid);
         return;
       }
 
@@ -72,15 +80,15 @@ class _SetupScreenState extends State<SetupScreen> {
         if (res.statusCode == 200) {
           final data = jsonDecode(res.body);
           if (data['completed'] != true) {
-            setState(() => _statusMessage = 'Complete the first-start wizard in your browser first');
+            setState(() => _statusKey = _StatusKey.completeWizardFirst);
             return;
           }
         } else {
-          setState(() => _statusMessage = 'Could not reach server');
+          setState(() => _statusKey = _StatusKey.couldNotReach);
           return;
         }
       } catch (e) {
-        setState(() => _statusMessage = 'Could not connect to server');
+        setState(() => _statusKey = _StatusKey.couldNotConnect);
         return;
       }
 
@@ -94,8 +102,19 @@ class _SetupScreenState extends State<SetupScreen> {
     }
   }
 
+  String? _getStatusMessage(AppLocalizations l10n) {
+    return switch (_statusKey) {
+      _StatusKey.serverUrlInvalid => l10n.serverUrlInvalid,
+      _StatusKey.completeWizardFirst => l10n.completeWizardFirst,
+      _StatusKey.couldNotReach => l10n.couldNotReach,
+      _StatusKey.couldNotConnect => l10n.couldNotConnect,
+      null => null,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isFirstSetup = !widget.configService.isConfigured;
 
     return Scaffold(
@@ -108,7 +127,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 icon: const Icon(Icons.close, color: Colors.white),
                 onPressed: () => Navigator.of(context).pop(),
               ),
-              title: const Text('Connection', style: TextStyle(color: Colors.white)),
+              title: Text(l10n.connection, style: const TextStyle(color: Colors.white)),
             ),
       body: SafeArea(
         child: Center(
@@ -123,9 +142,9 @@ class _SetupScreenState extends State<SetupScreen> {
                   if (isFirstSetup) ...[
                     const Icon(Icons.graphic_eq, size: 80, color: Colors.white),
                     const SizedBox(height: 16),
-                    const Text(
-                      'CAAL Setup',
-                      style: TextStyle(
+                    Text(
+                      l10n.caalSetup,
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -133,18 +152,18 @@ class _SetupScreenState extends State<SetupScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Enter your server address to get started',
-                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                    Text(
+                      l10n.enterServerToStart,
+                      style: const TextStyle(fontSize: 16, color: Colors.white70),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 40),
                   ],
 
                   // Server URL field
-                  const Text(
-                    'Server URL',
-                    style: TextStyle(
+                  Text(
+                    l10n.serverUrl,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: Colors.white,
@@ -157,7 +176,7 @@ class _SetupScreenState extends State<SetupScreen> {
                     autocorrect: false,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: 'http://192.168.1.100:3000',
+                      hintText: l10n.serverUrlHint,
                       hintStyle: const TextStyle(color: Colors.white38),
                       filled: true,
                       fillColor: const Color(0xFF2A2A2A),
@@ -172,26 +191,26 @@ class _SetupScreenState extends State<SetupScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Server URL is required';
+                        return l10n.serverUrlRequired;
                       }
                       final uri = Uri.tryParse(value.trim());
                       if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
-                        return 'Enter a valid URL (e.g., http://192.168.1.100:3000)';
+                        return l10n.serverUrlInvalid;
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'Your CAAL server address',
-                    style: TextStyle(fontSize: 12, color: Colors.white54),
+                  Text(
+                    l10n.yourServerAddress,
+                    style: const TextStyle(fontSize: 12, color: Colors.white54),
                   ),
                   const SizedBox(height: 24),
 
                   // Status message (wizard not complete, connection error, etc.)
-                  if (_statusMessage != null) ...[
+                  if (_getStatusMessage(l10n) != null) ...[
                     Text(
-                      _statusMessage!,
+                      _getStatusMessage(l10n)!,
                       style: const TextStyle(fontSize: 13, color: Colors.orange),
                       textAlign: TextAlign.center,
                     ),
@@ -221,7 +240,7 @@ class _SetupScreenState extends State<SetupScreen> {
                               ),
                             )
                           : Text(
-                              isFirstSetup ? 'CONNECT' : 'SAVE',
+                              isFirstSetup ? l10n.connect : l10n.save,
                               style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                     ),
@@ -229,9 +248,9 @@ class _SetupScreenState extends State<SetupScreen> {
 
                   if (isFirstSetup) ...[
                     const SizedBox(height: 24),
-                    const Text(
-                      'Complete the first-start wizard in your browser, then connect here.',
-                      style: TextStyle(fontSize: 12, color: Colors.white38),
+                    Text(
+                      l10n.completeWizardHint,
+                      style: const TextStyle(fontSize: 12, color: Colors.white38),
                       textAlign: TextAlign.center,
                     ),
                   ],

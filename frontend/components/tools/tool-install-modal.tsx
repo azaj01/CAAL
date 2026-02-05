@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { ArrowRight, Check, CircleNotch, Warning, X } from '@phosphor-icons/react/dist/ssr';
 import type { InstallStep, ToolIndexEntry, ToolManifest } from '@/types/tools';
 
@@ -12,6 +13,9 @@ interface ToolInstallModalProps {
 }
 
 export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInstallModalProps) {
+  const t = useTranslations('Tools');
+  const tCommon = useTranslations('Common');
+
   const [step, setStep] = useState<InstallStep>('variables');
   const [manifest, setManifest] = useState<ToolManifest | null>(null);
   const [workflow, setWorkflow] = useState<Record<string, unknown> | null>(null);
@@ -153,7 +157,7 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
       return (
         <div className="flex flex-col items-center justify-center py-12">
           <CircleNotch className="h-8 w-8 animate-spin text-blue-500" />
-          <p className="text-muted-foreground mt-4">Loading tool details...</p>
+          <p className="text-muted-foreground mt-4">{t('install.loading')}</p>
         </div>
       );
     }
@@ -162,9 +166,7 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
       case 'variables':
         return (
           <div className="space-y-4">
-            <p className="text-muted-foreground text-sm">
-              Enter the configuration values for this tool:
-            </p>
+            <p className="text-muted-foreground text-sm">{t('install.variablesIntro')}</p>
             {manifest?.required_variables.map((v) => (
               <div key={v.name} className="space-y-1">
                 <label className="text-sm font-medium">{v.description}</label>
@@ -183,7 +185,7 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
               onClick={handleVariablesSubmit}
               className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium transition-colors"
             >
-              Continue
+              {tCommon('continue')}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -192,19 +194,18 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
       case 'credentials':
         return (
           <div className="space-y-4">
-            <p className="text-muted-foreground text-sm">
-              This tool requires n8n credentials. Enter the exact name of each credential as it
-              appears in your n8n instance.
-            </p>
+            <p className="text-muted-foreground text-sm">{t('install.credentialsIntro')}</p>
             {manifest?.required_credentials.map((c) => (
               <div key={c.name} className="space-y-1.5">
                 <p className="text-sm font-medium">{c.description}</p>
-                <p className="text-muted-foreground text-xs">Type: {c.credential_type}</p>
+                <p className="text-muted-foreground text-xs">
+                  {t('install.credentialTypeLabel')} {c.credential_type}
+                </p>
                 <input
                   type="text"
                   value={credentials[c.name] || ''}
                   onChange={(e) => setCredentials({ ...credentials, [c.name]: e.target.value })}
-                  placeholder="Enter n8n credential name"
+                  placeholder={t('install.credentialPlaceholder')}
                   className="border-input bg-background w-full rounded-lg border px-4 py-3 text-sm"
                 />
               </div>
@@ -214,7 +215,7 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
               onClick={handleCredentialsSubmit}
               className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium transition-colors"
             >
-              Install
+              {t('install.submitButton')}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -224,7 +225,7 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
         return (
           <div className="flex flex-col items-center justify-center py-12">
             <CircleNotch className="h-8 w-8 animate-spin text-blue-500" />
-            <p className="text-muted-foreground mt-4">Installing tool to n8n...</p>
+            <p className="text-muted-foreground mt-4">{t('install.installing')}</p>
           </div>
         );
 
@@ -235,14 +236,14 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-500/20">
                 <Check className="h-6 w-6 text-green-500" weight="bold" />
               </div>
-              <h3 className="text-lg font-semibold">Tool Installed!</h3>
+              <h3 className="text-lg font-semibold">{t('install.successTitle')}</h3>
               <p className="text-muted-foreground text-center text-sm">
-                {manifest?.name.replace(/-/g, ' ')} is now available.
+                {t('install.successMessage', { tool: manifest?.name.replace(/-/g, ' ') ?? '' })}
               </p>
             </div>
             {manifest?.voice_triggers && manifest.voice_triggers.length > 0 && (
               <div className="rounded-lg border p-4">
-                <p className="mb-2 text-sm font-medium">Try saying:</p>
+                <p className="mb-2 text-sm font-medium">{t('install.successVoiceTriggersLabel')}</p>
                 <ul className="space-y-1">
                   {manifest.voice_triggers.slice(0, 3).map((trigger, i) => (
                     <li key={i} className="text-sm text-blue-400 italic">
@@ -268,7 +269,7 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/20">
                 <Warning className="h-6 w-6 text-red-500" weight="bold" />
               </div>
-              <h3 className="text-lg font-semibold">Installation Failed</h3>
+              <h3 className="text-lg font-semibold">{t('install.errorTitle')}</h3>
               <p className="text-muted-foreground text-center text-sm">{error}</p>
             </div>
             <div className="flex gap-2">
@@ -276,13 +277,13 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
                 onClick={onClose}
                 className="bg-muted text-muted-foreground hover:bg-muted/80 flex-1 rounded-lg px-4 py-3 font-medium transition-colors"
               >
-                Cancel
+                {tCommon('cancel')}
               </button>
               <button
                 onClick={handleRetry}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg px-4 py-3 font-medium transition-colors"
               >
-                Retry
+                {tCommon('retry')}
               </button>
             </div>
           </div>
@@ -299,7 +300,9 @@ export function ToolInstallModal({ tool, onClose, onInstallComplete }: ToolInsta
       <div className="bg-background relative z-10 w-full max-w-md rounded-2xl p-6 shadow-2xl">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold">Install {tool.name.replace(/-/g, ' ')}</h2>
+          <h2 className="text-lg font-bold">
+            {t('install.modalTitle', { tool: tool.name.replace(/-/g, ' ') })}
+          </h2>
           <button
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-full p-1 transition-colors"

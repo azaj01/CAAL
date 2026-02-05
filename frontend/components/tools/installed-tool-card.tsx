@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ArrowsClockwise, CheckCircle, ShareNetwork } from '@phosphor-icons/react/dist/ssr';
 
 interface N8nWorkflow {
@@ -35,6 +36,7 @@ export function InstalledToolCard({
   onClick,
   onUpdate,
 }: InstalledToolCardProps) {
+  const t = useTranslations('Tools');
   return (
     <div
       onClick={() => onClick(workflow)}
@@ -45,10 +47,14 @@ export function InstalledToolCard({
         {/* Header: Badge + Active indicator */}
         <div className="mb-4 flex items-center justify-between">
           <span className="rounded-full bg-green-500/20 px-2.5 py-1 text-xs font-medium text-green-400">
-            Custom
+            {t('card.customBadge')}
           </span>
           {workflow.active && (
-            <CheckCircle className="h-5 w-5 text-green-400" weight="fill" aria-label="Active" />
+            <CheckCircle
+              className="h-5 w-5 text-green-400"
+              weight="fill"
+              aria-label={t('card.activeLabel')}
+            />
           )}
         </div>
 
@@ -80,7 +86,7 @@ export function InstalledToolCard({
           className="bg-primary-bg hover:bg-primary-bg/90 flex w-full items-center justify-center gap-2 py-4 font-bold text-white transition-colors"
         >
           <ShareNetwork className="h-5 w-5" weight="bold" />
-          Share to Registry
+          {t('card.shareButton')}
         </button>
       )}
 
@@ -94,7 +100,7 @@ export function InstalledToolCard({
           className="flex w-full items-center justify-center gap-2 bg-orange-500/20 py-4 font-bold text-orange-400 transition-colors hover:bg-orange-500/30"
         >
           <ArrowsClockwise className="h-5 w-5" weight="bold" />
-          Update
+          {t('card.updateButton')}
         </button>
       )}
     </div>

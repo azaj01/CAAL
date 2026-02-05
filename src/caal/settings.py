@@ -37,15 +37,8 @@ DEFAULT_SETTINGS = {
     # Agent identity
     "agent_name": "Cal",
     "prompt": "default",  # "default" | "custom"
-    "wake_greetings": [
-        "Hey, what's up?",
-        "Hi there!",
-        "Yeah?",
-        "What can I do for you?",
-        "Hey!",
-        "Yo!",
-        "What's up?",
-    ],
+    # Language setting
+    "language": "en",  # ISO 639-1: "en" | "fr" | "it"
     # Provider settings (UI sets both together, but stored separately for power users)
     "stt_provider": "speaches",  # "speaches" | "groq"
     "llm_provider": "ollama",  # "ollama" | "groq"
@@ -81,6 +74,14 @@ DEFAULT_SETTINGS = {
     # Turn detection settings (advanced)
     "allow_interruptions": True,  # Whether user can interrupt agent mid-speech
     "min_endpointing_delay": 0.5,  # Seconds to wait before considering turn complete
+}
+
+# Per-language Piper TTS voice mapping
+# When adding a new language, add its Piper voice here.
+PIPER_VOICE_MAP: dict[str, str] = {
+    "en": "speaches-ai/piper-en_US-ryan-high",
+    "fr": "speaches-ai/piper-fr_FR-siwis-medium",
+    "it": "speaches-ai/piper-it_IT-paola-medium",
 }
 
 # Keys that should never be returned via API (security)
@@ -273,11 +274,16 @@ def get_prompt_path(prompt_name: str) -> Path:
     return PROMPT_DIR / f"{prompt_name}.md"
 
 
-def load_prompt_content(prompt_name: str | None = None) -> str:
+def load_prompt_content(
+    prompt_name: str | None = None, language: str = "en"
+) -> str:
     """Load raw prompt content from file.
 
     Args:
         prompt_name: "default" or "custom". If None, uses settings["prompt"].
+        language: ISO 639-1 language code ("en" or "fr"). Used to resolve
+                  per-language prompt files (e.g. prompt/fr/default.md).
+                  Custom prompts are language-neutral and ignore this parameter.
 
     Returns:
         Prompt file content, or default content if file doesn't exist.
@@ -285,12 +291,28 @@ def load_prompt_content(prompt_name: str | None = None) -> str:
     if prompt_name is None:
         prompt_name = get_setting("prompt", "default")
 
+    # Custom prompts are language-neutral (always at prompt/custom.md)
+    if prompt_name == "custom":
+        prompt_path = get_prompt_path("custom")
+        if not prompt_path.exists():
+            # Fall back to per-language default
+            return load_prompt_content("default", language=language)
+        try:
+            return prompt_path.read_text()
+        except Exception as e:
+            logger.error(f"Failed to load prompt from {prompt_path}: {e}")
+            return ""
+
+    # Try per-language path first: prompt/{language}/default.md
+    lang_path = PROMPT_DIR / language / f"{prompt_name}.md"
+    if lang_path.exists():
+        try:
+            return lang_path.read_text()
+        except Exception as e:
+            logger.error(f"Failed to load prompt from {lang_path}: {e}")
+
+    # Fall back to flat path: prompt/default.md (backward compatibility)
     prompt_path = get_prompt_path(prompt_name)
-
-    # If custom doesn't exist, fall back to default
-    if prompt_name == "custom" and not prompt_path.exists():
-        prompt_path = get_prompt_path("default")
-
     try:
         return prompt_path.read_text()
     except Exception as e:
@@ -315,9 +337,59 @@ def save_custom_prompt(content: str) -> None:
         raise
 
 
+def load_greetings(language: str = "en") -> list[str]:
+    """Load wake greetings from file.
+
+    Reads prompt/{language}/greetings.txt (one greeting per line).
+    Falls back to English if the language file doesn't exist.
+    Always returns at least one greeting to prevent random.choice([]) crash.
+
+    Args:
+        language: ISO 639-1 language code ("en", "fr", etc.)
+
+    Returns:
+        List of greeting strings, guaranteed non-empty.
+    """
+    lang_path = PROMPT_DIR / language / "greetings.txt"
+    fallback_path = PROMPT_DIR / "en" / "greetings.txt"
+
+    for path in [lang_path, fallback_path]:
+        if path.exists():
+            try:
+                lines = path.read_text().strip().splitlines()
+                greetings = [line.strip() for line in lines if line.strip()]
+                if greetings:
+                    return greetings
+            except Exception as e:
+                logger.error(f"Failed to load greetings from {path}: {e}")
+
+    # Ultimate fallback — never return empty list
+    return ["Hey!"]
+
+
+def save_greetings(language: str, content: str) -> None:
+    """Save wake greetings to file.
+
+    Writes to prompt/{language}/greetings.txt, creating the directory if needed.
+
+    Args:
+        language: ISO 639-1 language code
+        content: Greetings text, one per line
+    """
+    greetings_path = PROMPT_DIR / language / "greetings.txt"
+    try:
+        greetings_path.parent.mkdir(parents=True, exist_ok=True)
+        greetings_path.write_text(content)
+        logger.info(f"Saved greetings to {greetings_path}")
+    except Exception as e:
+        logger.error(f"Failed to save greetings: {e}")
+        raise
+
+
 def load_prompt_with_context(
     timezone_id: str = "America/Los_Angeles",
     timezone_display: str = "Pacific Time",
+    language: str = "en",
 ) -> str:
     """Load prompt and populate with date/time context.
 
@@ -327,6 +399,7 @@ def load_prompt_with_context(
     Args:
         timezone_id: IANA timezone ID for current time
         timezone_display: Human-readable timezone name
+        language: ISO 639-1 language code ("en" or "fr")
 
     Returns:
         Prompt with {{CURRENT_DATE_CONTEXT}} and {{TIMEZONE}} replaced
@@ -336,13 +409,29 @@ def load_prompt_with_context(
         format_time_speech_friendly,
     )
 
-    template = load_prompt_content()
+    template = load_prompt_content(language=language)
 
     now = datetime.now(ZoneInfo(timezone_id))
-    date_context = (
-        f"Today is {format_date_speech_friendly(now)}. "
-        f"The current time is {format_time_speech_friendly(now)} {timezone_display}."
-    )
+
+    if language == "fr":
+        date_context = (
+            f"Nous sommes le {format_date_speech_friendly(now, language='fr')}. "
+            f"Il est {format_time_speech_friendly(now, language='fr')}, "
+            f"{timezone_display}."
+        )
+    elif language == "it":
+        date_context = (
+            f"Oggi è {format_date_speech_friendly(now, language='it')}. "
+            f"Sono le {format_time_speech_friendly(now, language='it')}, "
+            f"{timezone_display}."
+        )
+    else:
+        date_context = (
+            f"Today is {format_date_speech_friendly(now, language=language)}. "
+            f"The current time is "
+            f"{format_time_speech_friendly(now, language=language)} "
+            f"{timezone_display}."
+        )
 
     prompt = template.replace("{{CURRENT_DATE_CONTEXT}}", date_context)
     prompt = prompt.replace("{{TIMEZONE}}", timezone_display)

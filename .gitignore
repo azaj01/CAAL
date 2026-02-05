@@ -103,6 +103,3 @@ mobile/.packages
 mobile/.pub-cache/
 mobile/.pub/
 mobile/releases/*.apk
-
-# Auto Claude data directory
-.auto-claude/

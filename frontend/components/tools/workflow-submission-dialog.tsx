@@ -1,6 +1,7 @@
 'use client';
 
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { CheckCircle, Warning, X } from '@phosphor-icons/react/dist/ssr';
 import type { SanitizationResult } from '@/lib/workflow-sanitizer';
 
@@ -32,6 +33,8 @@ export function WorkflowSubmissionDialog({
   onConfirm,
   onCancel,
 }: WorkflowSubmissionDialogProps) {
+  const t = useTranslations('Tools');
+  const tCommon = useTranslations('Common');
   const { detected, warnings } = result;
 
   return createPortal(
@@ -44,7 +47,7 @@ export function WorkflowSubmissionDialog({
         {/* Header */}
         <div className="flex items-start justify-between border-b p-6">
           <div>
-            <h2 className="text-xl font-bold">Share Workflow to Registry</h2>
+            <h2 className="text-xl font-bold">{t('share.title')}</h2>
             <p className="text-muted-foreground mt-1 text-sm">{workflow.name}</p>
           </div>
           <button
@@ -61,18 +64,15 @@ export function WorkflowSubmissionDialog({
           <div className="flex items-start gap-3 rounded-lg border border-green-500/30 bg-green-500/10 p-4">
             <CheckCircle className="h-5 w-5 shrink-0 text-green-400" weight="fill" />
             <div>
-              <p className="font-medium text-green-200">Your secrets never leave your network</p>
-              <p className="text-sm text-green-300/80">
-                Sanitization happens locally in your browser before submission. Credential IDs are
-                nullified.
-              </p>
+              <p className="font-medium text-green-200">{t('share.securityTitle')}</p>
+              <p className="text-sm text-green-300/80">{t('share.securityDescription')}</p>
             </div>
           </div>
 
           {/* Variables detected */}
           {detected.variables.length > 0 && (
             <div className="bg-muted/50 rounded-lg border p-4">
-              <p className="mb-2 font-medium">Variables detected (will be parameterized):</p>
+              <p className="mb-2 font-medium">{t('share.variablesDetected')}</p>
               <ul className="space-y-1 text-sm">
                 {detected.variables.map((v, i) => (
                   <li key={i} className="text-muted-foreground font-mono">
@@ -99,7 +99,7 @@ export function WorkflowSubmissionDialog({
           {/* Credentials detected */}
           {detected.credentials.length > 0 && (
             <div className="bg-muted/50 rounded-lg border p-4">
-              <p className="mb-2 font-medium">Credentials found and being parameterized:</p>
+              <p className="mb-2 font-medium">{t('share.credentialsDetected')}</p>
               <ul className="space-y-1 text-sm">
                 {detected.credentials.map((c, i) => {
                   const varName =
@@ -120,7 +120,7 @@ export function WorkflowSubmissionDialog({
           {/* Private URLs detected */}
           {detected.private_urls && detected.private_urls.length > 0 && (
             <div className="bg-muted/50 rounded-lg border p-4">
-              <p className="mb-2 font-medium">Private network URLs (will be parameterized):</p>
+              <p className="mb-2 font-medium">{t('share.privateUrlsDetected')}</p>
               <ul className="space-y-1 text-sm">
                 {detected.private_urls.map((url, i) => (
                   <li key={i} className="text-muted-foreground font-mono">
@@ -150,7 +150,7 @@ export function WorkflowSubmissionDialog({
             <div className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
               <Warning className="h-5 w-5 shrink-0 text-red-400" weight="fill" />
               <div>
-                <p className="font-medium text-red-200">Submission failed</p>
+                <p className="font-medium text-red-200">{t('share.submissionFailed')}</p>
                 <p className="text-sm text-red-300/80">{error}</p>
               </div>
             </div>
@@ -161,17 +161,15 @@ export function WorkflowSubmissionDialog({
             <div className="flex items-start gap-3 rounded-lg border border-green-500/30 bg-green-500/10 p-4">
               <CheckCircle className="h-5 w-5 shrink-0 text-green-400" weight="fill" />
               <div className="flex-1">
-                <p className="font-medium text-green-200">Ready to submit!</p>
-                <p className="mt-1 text-sm text-green-300/80">
-                  Complete your submission in the form. If popup was blocked, click below:
-                </p>
+                <p className="font-medium text-green-200">{t('share.readyToSubmit')}</p>
+                <p className="mt-1 text-sm text-green-300/80">{t('share.popupBlockedHint')}</p>
                 <a
                   href={formUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-2 inline-block rounded bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-500"
                 >
-                  Open Submission Form
+                  {t('share.openFormButton')}
                 </a>
               </div>
             </div>
@@ -185,7 +183,7 @@ export function WorkflowSubmissionDialog({
             disabled={isSubmitting}
             className="hover:bg-muted rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {formUrl ? 'Close' : 'Cancel'}
+            {formUrl ? tCommon('close') : tCommon('cancel')}
           </button>
           {!formUrl && (
             <button
@@ -193,7 +191,7 @@ export function WorkflowSubmissionDialog({
               disabled={!!error || isSubmitting}
               className="bg-primary-bg text-primary-foreground rounded-lg px-4 py-2 text-sm font-medium shadow-[0_2px_4px_rgba(0,0,0,0.4),0_4px_8px_rgba(0,0,0,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(0,0,0,0.4),0_8px_16px_rgba(0,0,0,0.3)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0"
             >
-              {isSubmitting ? 'Preparing submission...' : 'Continue to Submission Form'}
+              {isSubmitting ? t('share.preparingSubmission') : t('share.continueButton')}
             </button>
           )}
         </div>

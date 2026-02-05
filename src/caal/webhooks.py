@@ -46,7 +46,8 @@ from livekit.protocol.models import DataPacket
 from livekit.protocol.room import SendDataRequest
 from pydantic import BaseModel
 
-from . import registry_cache, settings as settings_module
+from . import registry_cache
+from . import settings as settings_module
 
 logger = logging.getLogger(__name__)
 
@@ -371,6 +372,20 @@ class PromptUpdateRequest(BaseModel):
     content: str
 
 
+class GreetingsResponse(BaseModel):
+    """Response body for /greetings endpoint."""
+
+    language: str
+    content: str  # Raw text, one greeting per line
+
+
+class GreetingsUpdateRequest(BaseModel):
+    """Request body for POST /greetings endpoint."""
+
+    language: str
+    content: str
+
+
 class VoicesResponse(BaseModel):
     """Response body for /voices endpoint."""
 
@@ -392,8 +407,12 @@ async def get_settings() -> SettingsResponse:
         Sensitive keys (tokens) are excluded for security.
     """
     settings = settings_module.load_settings_safe()  # Excludes sensitive keys
-    prompt_content = settings_module.load_prompt_content()
+    language = settings.get("language", "en")
+    prompt_content = settings_module.load_prompt_content(language=language)
     custom_exists = settings_module.custom_prompt_exists()
+
+    # Inject greetings from file for backward compat (mobile reads this field)
+    settings["wake_greetings"] = settings_module.load_greetings(language)
 
     return SettingsResponse(
         settings=settings,
@@ -414,6 +433,9 @@ async def update_settings(req: SettingsUpdateRequest) -> SettingsResponse:
     """
     # Load current settings
     current = settings_module.load_settings()
+
+    # Ignore wake_greetings — now managed via /greetings endpoint (file-based)
+    req.settings.pop("wake_greetings", None)
 
     # Secret fields that should not be overwritten with empty values
     # (UI doesn't show these, so saving would clear them)
@@ -436,8 +458,12 @@ async def update_settings(req: SettingsUpdateRequest) -> SettingsResponse:
 
     # Reload and return
     settings = settings_module.reload_settings()
-    prompt_content = settings_module.load_prompt_content()
+    language = settings.get("language", "en")
+    prompt_content = settings_module.load_prompt_content(language=language)
     custom_exists = settings_module.custom_prompt_exists()
+
+    # Inject greetings from file for backward compat
+    settings["wake_greetings"] = settings_module.load_greetings(language)
 
     logger.info(f"Settings updated: {list(req.settings.keys())}")
 
@@ -456,7 +482,8 @@ async def get_prompt() -> PromptResponse:
         PromptResponse with prompt name and content
     """
     prompt_name = settings_module.get_setting("prompt", "default")
-    content = settings_module.load_prompt_content(prompt_name)
+    language = settings_module.get_setting("language", "en")
+    content = settings_module.load_prompt_content(prompt_name, language=language)
     is_custom = prompt_name == "custom" and settings_module.custom_prompt_exists()
 
     return PromptResponse(
@@ -490,6 +517,41 @@ async def save_prompt(req: PromptUpdateRequest) -> PromptResponse:
         prompt="custom",
         content=req.content,
         is_custom=True,
+    )
+
+
+@app.get("/greetings", response_model=GreetingsResponse)
+async def get_greetings(language: str = "en") -> GreetingsResponse:
+    """Get wake greetings for a language.
+
+    Args:
+        language: ISO 639-1 language code (default "en")
+
+    Returns:
+        GreetingsResponse with language and content (one greeting per line)
+    """
+    greetings = settings_module.load_greetings(language)
+    return GreetingsResponse(
+        language=language,
+        content="\n".join(greetings),
+    )
+
+
+@app.post("/greetings", response_model=GreetingsResponse)
+async def save_greetings(req: GreetingsUpdateRequest) -> GreetingsResponse:
+    """Save wake greetings for a language.
+
+    Args:
+        req: GreetingsUpdateRequest with language and content
+
+    Returns:
+        GreetingsResponse with saved data
+    """
+    settings_module.save_greetings(req.language, req.content)
+    logger.info(f"Greetings saved for language: {req.language}")
+    return GreetingsResponse(
+        language=req.language,
+        content=req.content,
     )
 
 
@@ -820,6 +882,8 @@ class SetupCompleteRequest(BaseModel):
     tts_provider: str = "kokoro"  # "kokoro" | "piper"
     tts_voice_kokoro: str | None = None
     tts_voice_piper: str | None = None
+    # Language setting (optional, defaults to "en")
+    language: str | None = None
     # Integrations (optional) - None means "don't change"
     hass_enabled: bool | None = None
     hass_host: str | None = None
@@ -939,6 +1003,10 @@ async def complete_setup(req: SetupCompleteRequest) -> SetupCompleteResponse:
             current["tts_voice_kokoro"] = req.tts_voice_kokoro
         if req.tts_voice_piper:
             current["tts_voice_piper"] = req.tts_voice_piper
+
+        # Language setting
+        if req.language:
+            current["language"] = req.language
 
         # Mark setup as complete
         current["first_launch_completed"] = True
@@ -1124,8 +1192,8 @@ class N8nWorkflowItem(BaseModel):
     name: str
     active: bool
     tags: list[str]
-    createdAt: str
-    updatedAt: str
+    createdAt: str  # noqa: N815 (matches n8n API JSON field)
+    updatedAt: str  # noqa: N815 (matches n8n API JSON field)
     caal_registry_id: str | None = None
     caal_registry_version: str | None = None
 

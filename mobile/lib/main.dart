@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'app.dart';
+import 'providers/locale_provider.dart';
 import 'services/config_service.dart';
 
 void main() async {
@@ -13,6 +14,9 @@ void main() async {
   // Initialize config service first
   final configService = ConfigService();
   await configService.init();
+
+  // Initialize locale provider
+  final localeProvider = LocaleProvider();
 
   // Try to load .env as fallback for development (optional)
   try {
@@ -28,5 +32,13 @@ void main() async {
     // .env file not found - that's fine, we'll use ConfigService
   }
 
-  runApp(CaalApp(configService: configService));
+  // Load locale from backend if configured
+  if (configService.isConfigured) {
+    await localeProvider.loadFromSettings(configService.serverUrl);
+  }
+
+  runApp(CaalApp(
+    configService: configService,
+    localeProvider: localeProvider,
+  ));
 }

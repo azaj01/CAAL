@@ -3,7 +3,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
+import '../l10n/app_localizations.dart';
+import '../providers/locale_provider.dart';
 import '../services/config_service.dart';
 
 /// Full settings screen accessible from welcome screen.
@@ -69,6 +72,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _wakeWordModel = 'models/hey_cal.onnx';
   double _wakeWordThreshold = 0.5;
   double _wakeWordTimeout = 3.0;
+
+  // Language
+  String _language = 'en';
 
   // Available options
   List<String> _voices = [];
@@ -233,6 +239,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _wakeWordModel = settings['wake_word_model'] ?? _wakeWordModel;
           _wakeWordThreshold = (settings['wake_word_threshold'] ?? _wakeWordThreshold).toDouble();
           _wakeWordTimeout = (settings['wake_word_timeout'] ?? _wakeWordTimeout).toDouble();
+
+          // Language
+          _language = settings['language'] ?? 'en';
         });
       }
 
@@ -521,6 +530,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           'wake_word_model': _wakeWordModel,
           'wake_word_threshold': _wakeWordThreshold,
           'wake_word_timeout': _wakeWordTimeout,
+
+          // Language
+          'language': _language,
         };
 
         final res = await http.post(
@@ -583,6 +595,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isFirstSetup = !widget.configService.isConfigured;
 
     return Scaffold(
@@ -596,7 +609,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onPressed: () => Navigator.of(context).pop(),
               ),
         title: Text(
-          isFirstSetup ? 'CAAL Setup' : 'Settings',
+          isFirstSetup ? l10n.caalSetup : l10n.settingsTitle,
           style: const TextStyle(color: Colors.white),
         ),
         actions: [
@@ -616,7 +629,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    _saveStatus.isNotEmpty ? _saveStatus : 'Saving...',
+                    _saveStatus.isNotEmpty ? _saveStatus : l10n.saving,
                     style: const TextStyle(
                       color: Color(0xFF45997C),
                       fontSize: 12,
@@ -628,9 +641,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           else
             TextButton(
               onPressed: _save,
-              child: const Text(
-                'Save',
-                style: TextStyle(
+              child: Text(
+                l10n.save,
+                style: const TextStyle(
                   color: Color(0xFF45997C),
                   fontWeight: FontWeight.bold,
                 ),
@@ -660,9 +673,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
 
               // Connection Section
-              _buildSectionHeader('Connection', Icons.link),
+              _buildSectionHeader(l10n.connection, Icons.link),
               _buildCard([
-                _buildLabel('Server URL'),
+                _buildLabel(l10n.serverUrl),
                 Row(
                   children: [
                     Expanded(
@@ -671,14 +684,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         keyboardType: TextInputType.url,
                         autocorrect: false,
                         style: const TextStyle(color: Colors.white),
-                        decoration: _inputDecoration(hint: 'http://192.168.1.100:3000'),
+                        decoration: _inputDecoration(hint: l10n.serverUrlHint),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Server URL is required';
+                            return l10n.serverUrlRequired;
                           }
                           final uri = Uri.tryParse(value.trim());
                           if (uri == null || !uri.hasScheme || !uri.hasAuthority) {
-                            return 'Enter a valid URL';
+                            return l10n.serverUrlInvalid;
                           }
                           return null;
                         },
@@ -702,13 +715,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 valueColor: AlwaysStoppedAnimation(Colors.white),
                               ),
                             )
-                          : Text(_serverConnected ? '✓' : 'Test'),
+                          : Text(_serverConnected ? '✓' : l10n.test),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _serverConnected ? 'Connected to CAAL server' : 'Your CAAL server address',
+                  _serverConnected ? l10n.connectedToServer : l10n.yourServerAddress,
                   style: TextStyle(
                     fontSize: 12,
                     color: _serverConnected ? const Color(0xFF45997C) : Colors.white54,
@@ -716,36 +729,100 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ]),
 
+              // Language Section (after Connection, before settings that require connection)
+              const SizedBox(height: 24),
+              _buildSectionHeader(l10n.language, Icons.language),
+              _buildCard([
+                _buildLabel(l10n.language),
+                DropdownButtonFormField<String>(
+                  value: context.watch<LocaleProvider>().locale.languageCode,
+                  style: const TextStyle(color: Colors.white),
+                  dropdownColor: const Color(0xFF2A2A2A),
+                  decoration: _inputDecoration(),
+                  items: [
+                    DropdownMenuItem(value: 'en', child: Text(l10n.languageEnglish)),
+                    DropdownMenuItem(value: 'fr', child: Text(l10n.languageFrench)),
+                    DropdownMenuItem(value: 'it', child: Text(l10n.languageItalian)),
+                  ],
+                  onChanged: (value) async {
+                    if (value != null) {
+                      // Update app locale immediately for UI
+                      final localeProvider = context.read<LocaleProvider>();
+                      await localeProvider.setLocale(
+                        Locale(value),
+                        widget.configService.serverUrl,
+                      );
+
+                      // Switch TTS to Piper for non-English languages
+                      if (value != 'en' && _serverConnected) {
+                        const piperModels = {
+                          'en': 'speaches-ai/piper-en_US-ryan-high',
+                          'fr': 'speaches-ai/piper-fr_FR-siwis-medium',
+                          'it': 'speaches-ai/piper-it_IT-paola-medium',
+                        };
+                        final modelId =
+                            piperModels[value] ?? piperModels['en']!;
+                        try {
+                          await http.post(
+                            Uri.parse('$_webhookUrl/settings'),
+                            headers: {'Content-Type': 'application/json'},
+                            body: jsonEncode({
+                              'settings': {
+                                'tts_provider': 'piper',
+                                'tts_voice_piper': modelId,
+                              }
+                            }),
+                          );
+                          // Download the Piper model so it appears in voice list
+                          http.post(
+                            Uri.parse('$_webhookUrl/download-piper-model'),
+                            headers: {'Content-Type': 'application/json'},
+                            body: jsonEncode({'model_id': modelId}),
+                          );
+                        } catch (e) {
+                          // Best-effort
+                        }
+                      }
+
+                      // Reload settings to pick up updated greetings + TTS
+                      if (_serverConnected) {
+                        await _loadSettings();
+                      }
+                    }
+                  },
+                ),
+              ]),
+
               // Settings (only show if connected)
               if (_serverConnected) ...[
                 // Agent Section
                 const SizedBox(height: 24),
-                _buildSectionHeader('Agent', Icons.smart_toy_outlined),
+                _buildSectionHeader(l10n.agent, Icons.smart_toy_outlined),
                 _buildCard([
                   _buildTextField(
-                    label: 'Agent Name',
+                    label: l10n.agentName,
                     value: _agentName,
                     onChanged: (v) => setState(() => _agentName = v),
                   ),
-                  _buildLabel('Wake Greetings'),
+                  _buildLabel(l10n.wakeGreetings),
                   TextFormField(
                     controller: _wakeGreetingsController,
                     maxLines: 3,
                     style: const TextStyle(color: Colors.white),
-                    decoration: _inputDecoration(hint: 'One greeting per line'),
+                    decoration: _inputDecoration(hint: l10n.onePerLine),
                   ),
                 ]),
 
                 // Providers Section
                 const SizedBox(height: 24),
-                _buildSectionHeader('Providers', Icons.cloud_outlined),
+                _buildSectionHeader(l10n.providers, Icons.cloud_outlined),
                 _buildCard([
                   // LLM Provider
-                  _buildLabel('LLM Provider'),
+                  _buildLabel(l10n.llmProvider),
                   _buildProviderToggle(
                     options: ['ollama', 'groq'],
                     labels: ['Ollama', 'Groq'],
-                    subtitles: ['Local, private', 'Fast cloud'],
+                    subtitles: [l10n.ollamaLocalPrivate, l10n.groqFastCloud],
                     selected: _llmProvider,
                     onChanged: (v) => setState(() => _llmProvider = v),
                   ),
@@ -753,7 +830,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   // Ollama config
                   if (_llmProvider == 'ollama') ...[
-                    _buildLabel('Ollama Host'),
+                    _buildLabel(l10n.ollamaHost),
                     Row(
                       children: [
                         Expanded(
@@ -766,6 +843,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         const SizedBox(width: 8),
                         _buildTestButton(
+                          l10n: l10n,
                           testing: _testingOllama,
                           connected: _ollamaConnected,
                           onPressed: _testOllama,
@@ -780,13 +858,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (_ollamaConnected)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text('${_ollamaModels.length} models available',
+                        child: Text(l10n.modelsAvailable(_ollamaModels.length),
                             style: const TextStyle(color: Color(0xFF45997C), fontSize: 12)),
                       ),
                     const SizedBox(height: 12),
                     if (_ollamaModels.isNotEmpty || _ollamaModel.isNotEmpty)
                       _buildDropdown(
-                        label: 'Model',
+                        label: l10n.model,
                         value: _ollamaModel.isNotEmpty ? _ollamaModel : (_ollamaModels.isNotEmpty ? _ollamaModels.first : ''),
                         options: _ollamaModels.isNotEmpty ? _ollamaModels : [_ollamaModel],
                         onChanged: (v) => setState(() => _ollamaModel = v ?? _ollamaModel),
@@ -795,7 +873,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   // Groq config
                   if (_llmProvider == 'groq') ...[
-                    _buildLabel('API Key'),
+                    _buildLabel(l10n.apiKey),
                     Row(
                       children: [
                         Expanded(
@@ -809,6 +887,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         const SizedBox(width: 8),
                         _buildTestButton(
+                          l10n: l10n,
                           testing: _testingGroq,
                           connected: _groqConnected,
                           onPressed: _testGroq,
@@ -823,19 +902,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (_groqConnected)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
-                        child: Text('${_groqModels.length} models available',
+                        child: Text(l10n.modelsAvailable(_groqModels.length),
                             style: const TextStyle(color: Color(0xFF45997C), fontSize: 12)),
                       ),
                     if (!_groqConnected && _groqApiKey.isEmpty && _groqModel.isNotEmpty)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 4),
-                        child: Text('API key configured (enter new key to change)',
-                            style: TextStyle(color: Color(0xFF45997C), fontSize: 12)),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(l10n.apiKeyConfigured,
+                            style: const TextStyle(color: Color(0xFF45997C), fontSize: 12)),
                       ),
                     const SizedBox(height: 12),
                     if (_groqModels.isNotEmpty || _groqModel.isNotEmpty)
                       _buildDropdown(
-                        label: 'Model',
+                        label: l10n.model,
                         value: _groqModel.isNotEmpty ? _groqModel : (_groqModels.isNotEmpty ? _groqModels.first : ''),
                         options: _groqModels.isNotEmpty ? _groqModels : [_groqModel],
                         onChanged: (v) => setState(() => _groqModel = v ?? _groqModel),
@@ -845,34 +924,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Divider(color: Colors.white24, height: 32),
 
                   // TTS Provider
-                  _buildLabel('TTS Provider'),
+                  _buildLabel(l10n.ttsProvider),
                   _buildProviderToggle(
                     options: ['kokoro', 'piper'],
                     labels: ['Kokoro', 'Piper'],
-                    subtitles: ['GPU neural TTS', 'CPU lightweight'],
+                    subtitles: [l10n.kokoroGpuNeural, l10n.piperCpuLightweight],
                     selected: _ttsProvider,
                     onChanged: _handleTtsProviderChange,
                   ),
                   const SizedBox(height: 16),
                   _buildDropdown(
-                    label: 'Voice',
+                    label: l10n.voice,
                     value: _currentVoice,
-                    options: _voices.isNotEmpty ? _voices : [_currentVoice],
+                    options: _voices.isNotEmpty
+                        ? (_voices.contains(_currentVoice) ? _voices : [_currentVoice, ..._voices])
+                        : [_currentVoice],
                     onChanged: (v) => _setCurrentVoice(v ?? _currentVoice),
                   ),
                 ]),
 
                 // Integrations Section
                 const SizedBox(height: 24),
-                _buildSectionHeader('Integrations', Icons.extension_outlined),
+                _buildSectionHeader(l10n.integrations, Icons.extension_outlined),
 
                 // Home Assistant
                 _buildCard([
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Home Assistant',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                      Text(l10n.homeAssistant,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
                       Switch(
                         value: _hassEnabled,
                         onChanged: (v) => setState(() => _hassEnabled = v),
@@ -882,7 +963,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   if (_hassEnabled) ...[
                     const SizedBox(height: 12),
-                    _buildLabel('Host URL'),
+                    _buildLabel(l10n.hostUrl),
                     TextFormField(
                       initialValue: _hassHost,
                       style: const TextStyle(color: Colors.white),
@@ -890,7 +971,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onChanged: (v) => setState(() => _hassHost = v),
                     ),
                     const SizedBox(height: 12),
-                    _buildLabel('Access Token'),
+                    _buildLabel(l10n.accessToken),
                     Row(
                       children: [
                         Expanded(
@@ -904,6 +985,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         const SizedBox(width: 8),
                         _buildTestButton(
+                          l10n: l10n,
                           testing: _testingHass,
                           connected: _hassConnected,
                           onPressed: _testHass,
@@ -940,20 +1022,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   if (_n8nEnabled) ...[
                     const SizedBox(height: 12),
-                    _buildLabel('Host URL'),
+                    _buildLabel(l10n.hostUrl),
                     TextFormField(
                       initialValue: _n8nUrl,
                       style: const TextStyle(color: Colors.white),
                       decoration: _inputDecoration(hint: 'http://n8n:5678'),
                       onChanged: (v) => setState(() => _n8nUrl = v),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 4),
-                      child: Text('/mcp-server/http will be appended automatically',
-                          style: TextStyle(color: Colors.white38, fontSize: 11)),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(l10n.n8nMcpNote,
+                          style: const TextStyle(color: Colors.white38, fontSize: 11)),
                     ),
                     const SizedBox(height: 12),
-                    _buildLabel('Access Token'),
+                    _buildLabel(l10n.accessToken),
                     Row(
                       children: [
                         Expanded(
@@ -967,6 +1049,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         const SizedBox(width: 8),
                         _buildTestButton(
+                          l10n: l10n,
                           testing: _testingN8n,
                           connected: _n8nConnected,
                           onPressed: _testN8n,
@@ -979,21 +1062,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         child: Text(_n8nError!, style: const TextStyle(color: Colors.red, fontSize: 12)),
                       ),
                     if (_n8nConnected)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 4),
-                        child: Text('Connected', style: TextStyle(color: Color(0xFF45997C), fontSize: 12)),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(l10n.connected, style: const TextStyle(color: Color(0xFF45997C), fontSize: 12)),
                       ),
                   ],
                 ]),
 
                 const SizedBox(height: 24),
-                _buildSectionHeader('LLM Settings', Icons.tune),
+                _buildSectionHeader(l10n.llmSettings, Icons.tune),
                 _buildCard([
                   Row(
                     children: [
                       Expanded(
                         child: _buildNumberField(
-                          label: 'Temperature',
+                          label: l10n.temperature,
                           value: _temperature,
                           min: 0.0,
                           max: 2.0,
@@ -1004,7 +1087,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildIntField(
-                          label: 'Context Size',
+                          label: l10n.contextSize,
                           value: _numCtx,
                           min: 1024,
                           max: 131072,
@@ -1018,7 +1101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       Expanded(
                         child: _buildIntField(
-                          label: 'Max Turns',
+                          label: l10n.maxTurns,
                           value: _maxTurns,
                           min: 1,
                           max: 100,
@@ -1028,7 +1111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildIntField(
-                          label: 'Tool Cache',
+                          label: l10n.toolCache,
                           value: _toolCacheSize,
                           min: 0,
                           max: 10,
@@ -1042,20 +1125,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Allow Interruptions',
-                            style: TextStyle(
+                            l10n.allowInterruptions,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           Text(
-                            'Interrupt the agent while speaking',
-                            style: TextStyle(
+                            l10n.interruptAgent,
+                            style: const TextStyle(
                               color: Colors.white54,
                               fontSize: 12,
                             ),
@@ -1071,39 +1154,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildNumberField(
-                    label: 'Endpointing Delay (s)',
+                    label: l10n.endpointingDelay,
                     value: _minEndpointingDelay,
                     min: 0.1,
                     max: 1.0,
                     decimals: 1,
                     onChanged: (v) => setState(() => _minEndpointingDelay = v),
                   ),
-                  const Text(
-                    'How long to wait after you stop speaking',
-                    style: TextStyle(color: Colors.white38, fontSize: 11),
+                  Text(
+                    l10n.endpointingDelayDesc,
+                    style: const TextStyle(color: Colors.white38, fontSize: 11),
                   ),
                 ]),
 
                 const SizedBox(height: 24),
-                _buildSectionHeader('Wake Word', Icons.hearing),
+                _buildSectionHeader(l10n.wakeWord, Icons.hearing),
                 _buildCard([
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Server-Side Wake Word',
-                            style: TextStyle(
+                            l10n.serverSideWakeWord,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           Text(
-                            'Activate with wake phrase',
-                            style: TextStyle(
+                            l10n.activateWithWakePhrase,
+                            style: const TextStyle(
                               color: Colors.white54,
                               fontSize: 12,
                             ),
@@ -1119,12 +1202,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   if (_wakeWordEnabled) ...[
                     const SizedBox(height: 12),
-                    _buildWakeWordModelDropdown(),
+                    _buildWakeWordModelDropdown(l10n),
                     Row(
                       children: [
                         Expanded(
                           child: _buildNumberField(
-                            label: 'Threshold',
+                            label: l10n.threshold,
                             value: _wakeWordThreshold,
                             min: 0.1,
                             max: 1.0,
@@ -1135,7 +1218,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildNumberField(
-                            label: 'Timeout (s)',
+                            label: l10n.timeout,
                             value: _wakeWordTimeout,
                             min: 1.0,
                             max: 30.0,
@@ -1149,21 +1232,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ]),
 
                 const SizedBox(height: 16),
-                const Text(
-                  'Note: Model, context size, and wake word changes take effect on next session.',
-                  style: TextStyle(color: Colors.white38, fontSize: 12),
+                Text(
+                  l10n.changesNote,
+                  style: const TextStyle(color: Colors.white38, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
               ] else if (!isFirstSetup) ...[
                 const SizedBox(height: 48),
-                const Center(
+                Center(
                   child: Column(
                     children: [
-                      Icon(Icons.cloud_off, size: 48, color: Colors.white38),
-                      SizedBox(height: 16),
+                      const Icon(Icons.cloud_off, size: 48, color: Colors.white38),
+                      const SizedBox(height: 16),
                       Text(
-                        'Connect to server to configure agent settings',
-                        style: TextStyle(color: Colors.white54),
+                        l10n.connectToServerFirst,
+                        style: const TextStyle(color: Colors.white54),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -1237,6 +1320,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildTestButton({
+    required AppLocalizations l10n,
     required bool testing,
     required bool connected,
     required VoidCallback onPressed,
@@ -1257,7 +1341,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 valueColor: AlwaysStoppedAnimation(Colors.white),
               ),
             )
-          : Text(connected ? '✓' : 'Test'),
+          : Text(connected ? '✓' : l10n.test),
     );
   }
 
@@ -1437,16 +1521,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         .join(' ');
   }
 
-  Widget _buildWakeWordModelDropdown() {
+  Widget _buildWakeWordModelDropdown(AppLocalizations l10n) {
     final options = _wakeWordModels.isNotEmpty ? _wakeWordModels : [_wakeWordModel];
     final safeValue = options.contains(_wakeWordModel) ? _wakeWordModel : options.first;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Wake Word Model',
-          style: TextStyle(color: Colors.white54, fontSize: 12),
+        Text(
+          l10n.wakeWordModel,
+          style: const TextStyle(color: Colors.white54, fontSize: 12),
         ),
         const SizedBox(height: 4),
         DropdownButtonFormField<String>(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_sficon/flutter_sficon.dart' as sf;
 
+import '../l10n/app_localizations.dart';
 import '../ui/color_pallette.dart';
 
 class MessageBarButton extends StatelessWidget {
@@ -53,33 +54,36 @@ class MessageBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).inputDecorationTheme.fillColor,
-          borderRadius: BorderRadius.circular(25),
-        ),
-        padding: const EdgeInsets.symmetric(
-          vertical: 7,
-          horizontal: 10,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                focusNode: focusNode,
-                controller: controller,
-                decoration: const InputDecoration.collapsed(
-                  hintText: 'Message...',
-                ),
-                minLines: 1,
-                maxLines: 3,
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).inputDecorationTheme.fillColor,
+        borderRadius: BorderRadius.circular(25),
+      ),
+      padding: const EdgeInsets.symmetric(
+        vertical: 7,
+        horizontal: 10,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              focusNode: focusNode,
+              controller: controller,
+              decoration: InputDecoration.collapsed(
+                hintText: l10n.messageHint,
               ),
+              minLines: 1,
+              maxLines: 3,
             ),
-            MessageBarButton(
-              isEnabled: isSendEnabled,
-              onTap: onSendTap,
-            )
-          ],
-        ),
-      );
+          ),
+          MessageBarButton(
+            isEnabled: isSendEnabled,
+            onTap: onSendTap,
+          )
+        ],
+      ),
+    );
+  }
 }

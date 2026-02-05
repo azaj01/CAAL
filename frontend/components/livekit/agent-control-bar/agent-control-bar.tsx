@@ -1,6 +1,7 @@
 'use client';
 
 import { type HTMLAttributes, useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Track } from 'livekit-client';
 import { useChat, useRemoteParticipants } from '@livekit/components-react';
 import { ChatTextIcon, PhoneDisconnectIcon } from '@phosphor-icons/react/dist/ssr';
@@ -45,6 +46,7 @@ export function AgentControlBar({
   onChatOpenChange,
   ...props
 }: AgentControlBarProps & HTMLAttributes<HTMLDivElement>) {
+  const t = useTranslations('ControlBar');
   const { send } = useChat();
   const participants = useRemoteParticipants();
   const [chatOpen, setChatOpen] = useState(false);
@@ -84,7 +86,7 @@ export function AgentControlBar({
 
   return (
     <div
-      aria-label="Voice assistant controls"
+      aria-label={t('ariaLabel')}
       className={cn(
         'bg-background border-input/50 dark:border-muted flex flex-col rounded-[31px] border p-3 drop-shadow-md/3',
         className
@@ -106,7 +108,7 @@ export function AgentControlBar({
           {visibleControls.microphone && (
             <TrackSelector
               kind="audioinput"
-              aria-label="Toggle microphone"
+              aria-label={t('toggleMicrophone')}
               source={Track.Source.Microphone}
               pressed={microphoneToggle.enabled}
               disabled={microphoneToggle.pending}
@@ -124,7 +126,7 @@ export function AgentControlBar({
           {visibleControls.camera && (
             <TrackSelector
               kind="videoinput"
-              aria-label="Toggle camera"
+              aria-label={t('toggleCamera')}
               source={Track.Source.Camera}
               pressed={cameraToggle.enabled}
               pending={cameraToggle.pending}
@@ -137,11 +139,11 @@ export function AgentControlBar({
 
           {/* Toggle Screen Share */}
           {visibleControls.screenShare && (
-            <Tooltip content="Screen share">
+            <Tooltip content={t('screenShare')}>
               <TrackToggle
                 size="icon"
                 variant="secondary"
-                aria-label="Toggle screen share"
+                aria-label={t('toggleScreenShare')}
                 source={Track.Source.ScreenShare}
                 pressed={screenShareToggle.enabled}
                 disabled={screenShareToggle.pending}
@@ -151,11 +153,11 @@ export function AgentControlBar({
           )}
 
           {/* Toggle Transcript */}
-          <Tooltip content="Transcript">
+          <Tooltip content={t('transcript')}>
             <Toggle
               size="icon"
               variant="secondary"
-              aria-label="Toggle transcript"
+              aria-label={t('toggleTranscript')}
               pressed={chatOpen}
               onPressedChange={handleToggleTranscript}
             >
@@ -172,7 +174,7 @@ export function AgentControlBar({
 
         {/* Disconnect */}
         {visibleControls.leave && (
-          <Tooltip content="End session">
+          <Tooltip content={t('endSession')}>
             <Button
               variant="destructive"
               onClick={onDisconnect}
@@ -180,8 +182,8 @@ export function AgentControlBar({
               className="font-mono"
             >
               <PhoneDisconnectIcon weight="bold" />
-              <span className="hidden md:inline">END CALL</span>
-              <span className="inline md:hidden">END</span>
+              <span className="hidden md:inline">{t('endCall')}</span>
+              <span className="inline md:hidden">{t('endCallShort')}</span>
             </Button>
           </Tooltip>
         )}

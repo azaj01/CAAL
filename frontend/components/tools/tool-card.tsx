@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import {
   ChatCircle,
@@ -59,6 +60,8 @@ interface ToolCardProps {
 }
 
 export function ToolCard({ tool, isInstalled, onInstall, onClick }: ToolCardProps) {
+  const t = useTranslations('Tools');
+
   const category = tool.category as ToolCategory;
   const iconStyles = CATEGORY_ICON_STYLES[category] || CATEGORY_ICON_STYLES.other;
   const IconComponent = CATEGORY_ICONS[category] || CATEGORY_ICONS.other;
@@ -135,7 +138,7 @@ export function ToolCard({ tool, isInstalled, onInstall, onClick }: ToolCardProp
           <div className="mb-4 space-y-2">
             <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium">
               <Microphone className="h-3.5 w-3.5" />
-              <span>Try saying</span>
+              <span>{t('card.voiceTriggerLabel')}</span>
             </div>
             <div className="border-primary/20 bg-primary/10 text-primary rounded-lg border p-3 text-sm italic">
               &ldquo;{tool.voice_triggers[0]}&rdquo;
@@ -170,7 +173,7 @@ export function ToolCard({ tool, isInstalled, onInstall, onClick }: ToolCardProp
       {isInstalled ? (
         <div className="flex w-full items-center justify-center gap-2 bg-green-500/10 py-4 font-bold text-green-400">
           <CheckCircle className="h-5 w-5" weight="fill" />
-          Installed
+          {t('card.installedBadge')}
         </div>
       ) : (
         <button
@@ -181,7 +184,7 @@ export function ToolCard({ tool, isInstalled, onInstall, onClick }: ToolCardProp
           className="bg-primary-bg hover:bg-primary-bg/90 flex w-full items-center justify-center gap-2 py-4 font-bold text-white transition-colors"
         >
           <Plus className="h-5 w-5" weight="bold" />
-          Install Tool
+          {t('card.installButton')}
         </button>
       )}
     </div>

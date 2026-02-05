@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { MagnifyingGlass, Warning, X } from '@phosphor-icons/react/dist/ssr';
 import { type SortOption, useToolRegistry } from '@/hooks/useToolRegistry';
 import type { ToolIndexEntry } from '@/types/tools';
@@ -19,6 +20,8 @@ interface ToolsPanelProps {
 }
 
 export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
+  const t = useTranslations('Tools');
+
   const {
     filteredTools,
     tools: registryTools,
@@ -127,8 +130,8 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
         >
           <div className="flex items-center justify-between px-6 py-5">
             <div>
-              <h1 className="text-2xl font-bold">Tools</h1>
-              <p className="text-muted-foreground text-sm">Expand what CAAL can do</p>
+              <h1 className="text-2xl font-bold">{t('panel.title')}</h1>
+              <p className="text-muted-foreground text-sm">{t('panel.subtitle')}</p>
             </div>
             <button
               onClick={onClose}
@@ -148,7 +151,7 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
                   : 'text-muted-foreground hover:text-foreground border-transparent'
               }`}
             >
-              Browse Registry
+              {t('panel.browseTab')}
             </button>
             <button
               onClick={() => setCurrentView('installed')}
@@ -158,7 +161,7 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
                   : 'text-muted-foreground hover:text-foreground border-transparent'
               }`}
             >
-              Installed Tools
+              {t('panel.installedTab')}
             </button>
           </div>
 
@@ -174,7 +177,7 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search tools..."
+                    placeholder={t('panel.searchPlaceholder')}
                     className="text-foreground placeholder:text-muted-foreground focus:ring-primary w-full border-none py-3 pr-4 pl-12 text-sm transition-all focus:ring-2 focus:outline-none"
                     style={{
                       background: 'rgb(from var(--surface-2) r g b / 0.5)',
@@ -189,10 +192,10 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
                   className="select-field text-foreground w-48 shrink-0 px-3 py-3 text-sm"
                 >
-                  <option value="alphabetical">A → Z</option>
-                  <option value="alphabetical-desc">Z → A</option>
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
+                  <option value="alphabetical">{t('sort.alphabetical')}</option>
+                  <option value="alphabetical-desc">{t('sort.alphabeticalDesc')}</option>
+                  <option value="newest">{t('sort.newest')}</option>
+                  <option value="oldest">{t('sort.oldest')}</option>
                 </select>
               </div>
 
@@ -210,7 +213,7 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
                   type="text"
                   value={installedSearchQuery}
                   onChange={(e) => setInstalledSearchQuery(e.target.value)}
-                  placeholder="Search installed tools..."
+                  placeholder={t('panel.installedSearchPlaceholder')}
                   className="text-foreground placeholder:text-muted-foreground focus:ring-primary w-full border-none py-3 pr-4 pl-12 text-sm transition-all focus:ring-2 focus:outline-none"
                   style={{
                     background: 'rgb(from var(--surface-2) r g b / 0.5)',
@@ -236,10 +239,8 @@ export function ToolsPanel({ isOpen, onClose }: ToolsPanelProps) {
               <div className="flex items-start gap-3">
                 <Warning className="h-5 w-5 shrink-0 text-orange-400" weight="bold" />
                 <div>
-                  <p className="font-medium text-orange-200">n8n not configured</p>
-                  <p className="text-sm text-orange-300/80">
-                    Enable n8n in Settings → Integrations to install tools.
-                  </p>
+                  <p className="font-medium text-orange-200">{t('warnings.n8nNotConfigured')}</p>
+                  <p className="text-sm text-orange-300/80">{t('warnings.n8nEnablePrompt')}</p>
                 </div>
               </div>
             </div>

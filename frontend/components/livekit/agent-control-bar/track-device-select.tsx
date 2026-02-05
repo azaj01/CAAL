@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { cva } from 'class-variance-authority';
 import { LocalAudioTrack, LocalVideoTrack } from 'livekit-client';
 import { useMaybeRoomContext, useMediaDeviceSelect } from '@livekit/components-react';
@@ -51,6 +52,7 @@ export function TrackDeviceSelect({
   onActiveDeviceChange,
   ...props
 }: DeviceSelectProps) {
+  const t = useTranslations('ControlBar');
   const room = useMaybeRoomContext();
   const [open, setOpen] = useState(false);
   const [requestPermissionsState, setRequestPermissionsState] = useState(requestPermissions);
@@ -86,7 +88,8 @@ export function TrackDeviceSelect({
   }
 
   // Default tooltip based on device kind
-  const tooltipContent = tooltip || (kind === 'audioinput' ? 'Select microphone' : 'Select camera');
+  const tooltipContent =
+    tooltip || (kind === 'audioinput' ? t('selectMicrophone') : t('selectCamera'));
 
   const trigger = (
     <SelectTrigger className={cn(selectVariants({ size }), props.className)}>

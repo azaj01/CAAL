@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import {
   ArrowRight,
@@ -85,6 +86,8 @@ export function ToolDetailModal({
   n8nEnabled,
   installedStatus,
 }: ToolDetailModalProps) {
+  const t = useTranslations('Tools');
+
   const [manifest, setManifest] = useState<ToolManifest | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -191,7 +194,7 @@ export function ToolDetailModal({
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <CircleNotch className="text-primary h-8 w-8 animate-spin" />
-              <p className="text-muted-foreground mt-4">Loading details...</p>
+              <p className="text-muted-foreground mt-4">{t('detail.loading')}</p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-12">
@@ -212,10 +215,10 @@ export function ToolDetailModal({
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <Stack className="h-4 w-4 text-cyan-400" />
-                    Tool Suite
+                    {t('detail.toolSuiteTitle')}
                   </h3>
                   <p className="text-muted-foreground mb-3 text-sm">
-                    This is a multi-action tool that can perform several related tasks.
+                    {t('detail.toolSuiteDescription')}
                   </p>
                   {(manifest?.actions || tool.actions) && (
                     <div className="flex flex-wrap gap-2">
@@ -237,7 +240,7 @@ export function ToolDetailModal({
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <Microphone className="text-primary h-4 w-4" />
-                    Try Saying
+                    {t('detail.voiceTriggersTitle')}
                   </h3>
                   <div className="space-y-2">
                     {manifest.voice_triggers.map((trigger, i) => (
@@ -245,7 +248,7 @@ export function ToolDetailModal({
                         key={i}
                         className="border-primary/20 bg-primary/10 text-primary rounded-lg border p-3 text-sm italic"
                       >
-                        &ldquo;Hey Cal, {trigger}&rdquo;
+                        &ldquo;{t('detail.voiceTriggerFormat', { trigger })}&rdquo;
                       </div>
                     ))}
                   </div>
@@ -257,7 +260,7 @@ export function ToolDetailModal({
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <Package className="h-4 w-4 text-purple-400" />
-                    Required Services
+                    {t('detail.requiredServicesTitle')}
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {manifest.required_services.map((service) => (
@@ -277,7 +280,7 @@ export function ToolDetailModal({
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <Key className="h-4 w-4 text-orange-400" />
-                    Configuration Required
+                    {t('detail.requiredVariablesTitle')}
                   </h3>
                   <div className="space-y-3 rounded-lg border border-white/5 bg-white/5 p-4">
                     {manifest.required_variables.map((v) => (
@@ -285,7 +288,8 @@ export function ToolDetailModal({
                         <code className="text-xs font-semibold text-orange-300">{v.name}</code>
                         <p className="text-muted-foreground mt-0.5 text-sm">{v.description}</p>
                         <p className="text-muted-foreground/60 mt-1 text-xs">
-                          Example: <code className="text-orange-300/60">{v.example}</code>
+                          {t('detail.exampleLabel')}{' '}
+                          <code className="text-orange-300/60">{v.example}</code>
                         </p>
                       </div>
                     ))}
@@ -298,7 +302,7 @@ export function ToolDetailModal({
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <Key className="h-4 w-4 text-green-400" />
-                    n8n Credentials Required
+                    {t('detail.requiredCredentialsTitle')}
                   </h3>
                   <div className="space-y-3 rounded-lg border border-white/5 bg-white/5 p-4">
                     {manifest.required_credentials.map((c) => (
@@ -319,7 +323,7 @@ export function ToolDetailModal({
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <Tag className="text-muted-foreground h-4 w-4" />
-                    Tags
+                    {t('detail.tagsTitle')}
                   </h3>
                   <div className="flex flex-wrap gap-1.5">
                     {manifest.tags.map((tag) => (
@@ -339,7 +343,7 @@ export function ToolDetailModal({
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <GithubLogo className="text-muted-foreground h-4 w-4" />
-                    Author
+                    {t('detail.authorTitle')}
                   </h3>
                   <a
                     href={`https://github.com/${manifest.author.github}`}
@@ -357,7 +361,7 @@ export function ToolDetailModal({
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <ArrowSquareOut className="text-muted-foreground h-4 w-4" />
-                    Workflow
+                    {t('detail.workflowTitle')}
                   </h3>
                   <a
                     href={`${installedStatus.n8nBaseUrl}/workflow/${installedStatus.workflowId}`}
@@ -365,7 +369,7 @@ export function ToolDetailModal({
                     rel="noopener noreferrer"
                     className="text-primary inline-flex items-center gap-2 text-sm hover:underline"
                   >
-                    Open in n8n
+                    {t('detail.openWorkflowButton')}
                     <ArrowSquareOut className="h-3.5 w-3.5" />
                   </a>
                 </div>
@@ -379,12 +383,12 @@ export function ToolDetailModal({
           {!n8nEnabled ? (
             <div className="flex items-center justify-center gap-2 rounded-lg border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-orange-400">
               <Warning className="h-4 w-4" />
-              Enable n8n in Settings to install tools
+              {t('detail.n8nDisabledMessage')}
             </div>
           ) : installedStatus?.upToDate ? (
             <div className="flex items-center justify-center gap-2 rounded-lg bg-green-500/10 px-4 py-3 text-green-400">
               <CheckCircle className="h-5 w-5" weight="fill" />
-              <span className="font-medium">Installed</span>
+              <span className="font-medium">{t('card.installedBadge')}</span>
               <span className="text-sm text-green-400/60">v{installedStatus.version}</span>
             </div>
           ) : installedStatus ? (
@@ -393,7 +397,7 @@ export function ToolDetailModal({
               disabled={loading || !!error}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-3 font-medium text-white transition-colors hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Update to v{tool.version}
+              {t('detail.updateButton', { version: tool.version })}
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
@@ -402,7 +406,7 @@ export function ToolDetailModal({
               disabled={loading || !!error}
               className="bg-primary-bg hover:bg-primary-bg/90 disabled:bg-muted disabled:text-muted-foreground flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium text-white transition-colors disabled:cursor-not-allowed"
             >
-              Install Tool
+              {t('detail.installButton')}
               <ArrowRight className="h-4 w-4" />
             </button>
           )}

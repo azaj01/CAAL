@@ -49,7 +49,7 @@ class WebSearchTools:
 
     @function_tool
     async def web_search(self, query: str) -> str:
-        """Search the web for current events, news, prices, store hours, or any time-sensitive information not available from other tools.
+        """Search the web for current events, news, prices, hours, or time-sensitive info.
 
         Args:
             query: What to search for on the web.

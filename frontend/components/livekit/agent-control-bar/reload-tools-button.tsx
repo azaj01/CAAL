@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslations } from 'next-intl';
 import { ArrowsClockwiseIcon } from '@phosphor-icons/react/dist/ssr';
 import { Toggle } from '@/components/livekit/toggle';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils';
  * Posts to /reload-tools webhook.
  */
 export function ReloadToolsButton() {
+  const t = useTranslations('Tools');
   const [loading, setLoading] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
 
@@ -33,11 +35,11 @@ export function ReloadToolsButton() {
   };
 
   return (
-    <Tooltip content="Reload tools">
+    <Tooltip content={t('reload.tooltip')}>
       <Toggle
         size="icon"
         variant="secondary"
-        aria-label="Reload tools"
+        aria-label={t('reload.tooltip')}
         pressed={false}
         onPressedChange={handleReload}
         disabled={loading}

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'package:livekit_client/livekit_client.dart' as sdk;
 import 'package:livekit_components/livekit_components.dart' as components;
 import 'package:provider/provider.dart';
@@ -8,6 +10,7 @@ import 'controllers/audio_filter_ctrl.dart';
 import 'controllers/connection_error_ctrl.dart';
 import 'controllers/tool_status_ctrl.dart';
 import 'controllers/wake_word_state_ctrl.dart';
+import 'providers/locale_provider.dart';
 import 'screens/agent_screen.dart';
 import 'screens/setup_screen.dart';
 import 'screens/welcome_screen.dart';
@@ -19,8 +22,13 @@ import 'widgets/session_error_banner.dart';
 
 class CaalApp extends StatefulWidget {
   final ConfigService configService;
+  final LocaleProvider localeProvider;
 
-  const CaalApp({super.key, required this.configService});
+  const CaalApp({
+    super.key,
+    required this.configService,
+    required this.localeProvider,
+  });
 
   @override
   State<CaalApp> createState() => _CaalAppState();
@@ -103,15 +111,28 @@ class _CaalAppState extends State<CaalApp> {
     // Show setup screen if not configured
     if (_appCtrl == null) {
       return ChangeNotifierProvider.value(
-        value: widget.configService,
-        child: MaterialApp(
-          title: 'CAAL',
-          theme: buildTheme(isLight: true),
-          darkTheme: buildTheme(isLight: false),
-          themeMode: ThemeMode.dark,
-          home: SetupScreen(
-            configService: widget.configService,
-            onConfigured: _onConfigured,
+        value: widget.localeProvider,
+        child: ChangeNotifierProvider.value(
+          value: widget.configService,
+          child: Consumer<LocaleProvider>(
+            builder: (ctx, localeProvider, _) => MaterialApp(
+              title: 'CAAL',
+              theme: buildTheme(isLight: true),
+              darkTheme: buildTheme(isLight: false),
+              themeMode: ThemeMode.dark,
+              locale: localeProvider.locale,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: LocaleProvider.supportedLocales,
+              home: SetupScreen(
+                configService: widget.configService,
+                onConfigured: _onConfigured,
+              ),
+            ),
           ),
         ),
       );
@@ -119,61 +140,74 @@ class _CaalAppState extends State<CaalApp> {
 
     // Normal app flow with AppCtrl
     return ChangeNotifierProvider.value(
-      value: widget.configService,
+      value: widget.localeProvider,
       child: ChangeNotifierProvider.value(
-        value: _appCtrl!,
-        child: Consumer<AppCtrl>(
-          builder: (ctx, appCtrl, _) {
-            final toolStatusCtrl = ToolStatusCtrl(room: appCtrl.room);
-            final wakeWordStateCtrl = WakeWordStateCtrl(
-              room: appCtrl.room,
-              serverUrl: widget.configService.serverUrl,
-            );
-            final audioFilterCtrl = AudioFilterCtrl(room: appCtrl.room);
-            final connectionErrorCtrl = ConnectionErrorCtrl(room: appCtrl.room);
+        value: widget.configService,
+        child: ChangeNotifierProvider.value(
+          value: _appCtrl!,
+          child: Consumer<AppCtrl>(
+            builder: (ctx, appCtrl, _) {
+              final toolStatusCtrl = ToolStatusCtrl(room: appCtrl.room);
+              final wakeWordStateCtrl = WakeWordStateCtrl(
+                room: appCtrl.room,
+                serverUrl: widget.configService.serverUrl,
+              );
+              final audioFilterCtrl = AudioFilterCtrl(room: appCtrl.room);
+              final connectionErrorCtrl = ConnectionErrorCtrl(room: appCtrl.room);
 
-            return MultiProvider(
-              key: ValueKey(appCtrl.sessionKey),
-              providers: [
-                ChangeNotifierProvider<sdk.Session>.value(value: appCtrl.session),
-                ChangeNotifierProvider<components.RoomContext>.value(value: appCtrl.roomContext),
-                ChangeNotifierProvider<ToolStatusCtrl>.value(value: toolStatusCtrl),
-                ChangeNotifierProvider<WakeWordStateCtrl>.value(value: wakeWordStateCtrl),
-                ChangeNotifierProvider<AudioFilterCtrl>.value(value: audioFilterCtrl),
-                ChangeNotifierProvider<ConnectionErrorCtrl>.value(value: connectionErrorCtrl),
-              ],
-              child: components.SessionContext(
-                session: appCtrl.session,
-                child: MaterialApp(
-                  title: 'CAAL',
-                  theme: buildTheme(isLight: true),
-                  darkTheme: buildTheme(isLight: false),
-                  themeMode: ThemeMode.dark,
-                  home: Builder(
-                    builder: (ctx) => Center(
-                      child: Container(
-                        constraints: BoxConstraints(maxWidth: 620),
-                        child: Stack(
-                          children: [
-                            Selector<AppCtrl, AppScreenState>(
-                              selector: (ctx, appCtx) => appCtx.appScreenState,
-                              builder: (ctx, screen, _) => AppLayoutSwitcher(
-                                frontBuilder: (ctx) => const WelcomeScreen(),
-                                backBuilder: (ctx) => const AgentScreen(),
-                                isFront: screen == AppScreenState.welcome,
-                              ),
+              return MultiProvider(
+                key: ValueKey(appCtrl.sessionKey),
+                providers: [
+                  ChangeNotifierProvider<sdk.Session>.value(value: appCtrl.session),
+                  ChangeNotifierProvider<components.RoomContext>.value(value: appCtrl.roomContext),
+                  ChangeNotifierProvider<ToolStatusCtrl>.value(value: toolStatusCtrl),
+                  ChangeNotifierProvider<WakeWordStateCtrl>.value(value: wakeWordStateCtrl),
+                  ChangeNotifierProvider<AudioFilterCtrl>.value(value: audioFilterCtrl),
+                  ChangeNotifierProvider<ConnectionErrorCtrl>.value(value: connectionErrorCtrl),
+                ],
+                child: components.SessionContext(
+                  session: appCtrl.session,
+                  child: Consumer<LocaleProvider>(
+                    builder: (ctx, localeProvider, _) => MaterialApp(
+                      title: 'CAAL',
+                      theme: buildTheme(isLight: true),
+                      darkTheme: buildTheme(isLight: false),
+                      themeMode: ThemeMode.dark,
+                      locale: localeProvider.locale,
+                      localizationsDelegates: const [
+                        AppLocalizations.delegate,
+                        GlobalMaterialLocalizations.delegate,
+                        GlobalWidgetsLocalizations.delegate,
+                        GlobalCupertinoLocalizations.delegate,
+                      ],
+                      supportedLocales: LocaleProvider.supportedLocales,
+                      home: Builder(
+                        builder: (ctx) => Center(
+                          child: Container(
+                            constraints: BoxConstraints(maxWidth: 620),
+                            child: Stack(
+                              children: [
+                                Selector<AppCtrl, AppScreenState>(
+                                  selector: (ctx, appCtx) => appCtx.appScreenState,
+                                  builder: (ctx, screen, _) => AppLayoutSwitcher(
+                                    frontBuilder: (ctx) => const WelcomeScreen(),
+                                    backBuilder: (ctx) => const AgentScreen(),
+                                    isFront: screen == AppScreenState.welcome,
+                                  ),
+                                ),
+                                const SessionErrorBanner(),
+                                const ConnectionErrorBanner(),
+                              ],
                             ),
-                            const SessionErrorBanner(),
-                            const ConnectionErrorBanner(),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

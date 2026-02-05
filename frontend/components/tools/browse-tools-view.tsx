@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ArrowClockwise, Warning } from '@phosphor-icons/react/dist/ssr';
 import type { ToolIndexEntry } from '@/types/tools';
 import { ToolCard } from './tool-card';
@@ -29,12 +30,15 @@ export function BrowseToolsView({
   onRefresh,
   onClearSearch,
 }: BrowseToolsViewProps) {
+  const t = useTranslations('Tools');
+  const tCommon = useTranslations('Common');
+
   // Loading state
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <ArrowClockwise className="h-8 w-8 animate-spin text-blue-500" />
-        <p className="text-muted-foreground mt-4">Loading tools...</p>
+        <p className="text-muted-foreground mt-4">{t('browse.loading')}</p>
       </div>
     );
   }
@@ -49,7 +53,7 @@ export function BrowseToolsView({
           onClick={onRefresh}
           className="bg-muted hover:bg-muted/80 mt-4 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
         >
-          Retry
+          {tCommon('retry')}
         </button>
       </div>
     );
@@ -59,10 +63,10 @@ export function BrowseToolsView({
   if (filteredTools.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-muted-foreground">No tools found</p>
+        <p className="text-muted-foreground">{t('browse.emptyState')}</p>
         {searchQuery && (
           <button onClick={onClearSearch} className="text-primary mt-2 text-sm hover:underline">
-            Clear search
+            {t('browse.clearSearch')}
           </button>
         )}
       </div>

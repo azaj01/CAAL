@@ -1,6 +1,7 @@
 'use client';
 
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { ArrowRight, CheckCircle, Tag, X, XCircle } from '@phosphor-icons/react/dist/ssr';
 
 interface N8nWorkflow {
@@ -25,6 +26,7 @@ export function WorkflowDetailModal({
   onClose,
   onShare,
 }: WorkflowDetailModalProps) {
+  const t = useTranslations('Tools');
   const workflowUrl = `${n8nBaseUrl}/workflow/${workflow.id}`;
 
   return createPortal(
@@ -38,7 +40,7 @@ export function WorkflowDetailModal({
         <div className="flex shrink-0 items-start justify-between border-b p-6">
           <div>
             <h2 className="text-2xl font-bold">{workflow.name}</h2>
-            <p className="text-muted-foreground mt-1 text-sm">Custom Tool</p>
+            <p className="text-muted-foreground mt-1 text-sm">{t('workflow.customToolLabel')}</p>
           </div>
           <button
             onClick={onClose}
@@ -53,17 +55,17 @@ export function WorkflowDetailModal({
           <div className="space-y-6">
             {/* Status */}
             <div>
-              <h3 className="mb-2 text-sm font-medium">Status</h3>
+              <h3 className="mb-2 text-sm font-medium">{t('workflow.statusLabel')}</h3>
               <div className="flex items-center gap-2">
                 {workflow.active ? (
                   <>
                     <CheckCircle className="h-5 w-5 text-green-400" weight="fill" />
-                    <span className="text-green-400">Active</span>
+                    <span className="text-green-400">{t('workflow.statusActive')}</span>
                   </>
                 ) : (
                   <>
                     <XCircle className="h-5 w-5 text-red-400" weight="fill" />
-                    <span className="text-red-400">Inactive</span>
+                    <span className="text-red-400">{t('workflow.statusInactive')}</span>
                   </>
                 )}
               </div>
@@ -72,7 +74,7 @@ export function WorkflowDetailModal({
             {/* Tags */}
             {workflow.tags && workflow.tags.length > 0 && (
               <div>
-                <h3 className="mb-2 text-sm font-medium">Tags</h3>
+                <h3 className="mb-2 text-sm font-medium">{t('workflow.tagsLabel')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {workflow.tags.map((tag) => (
                     <div
@@ -90,13 +92,13 @@ export function WorkflowDetailModal({
             {/* Dates */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <h3 className="mb-2 text-sm font-medium">Created</h3>
+                <h3 className="mb-2 text-sm font-medium">{t('workflow.createdLabel')}</h3>
                 <p className="text-muted-foreground text-sm">
                   {new Date(workflow.createdAt).toLocaleString()}
                 </p>
               </div>
               <div>
-                <h3 className="mb-2 text-sm font-medium">Last Updated</h3>
+                <h3 className="mb-2 text-sm font-medium">{t('workflow.lastUpdatedLabel')}</h3>
                 <p className="text-muted-foreground text-sm">
                   {new Date(workflow.updatedAt).toLocaleString()}
                 </p>
@@ -105,7 +107,7 @@ export function WorkflowDetailModal({
 
             {/* Workflow URL */}
             <div>
-              <h3 className="mb-2 text-sm font-medium">n8n Workflow</h3>
+              <h3 className="mb-2 text-sm font-medium">{t('workflow.n8nWorkflowLabel')}</h3>
               <a
                 href={workflowUrl}
                 target="_blank"
@@ -118,11 +120,7 @@ export function WorkflowDetailModal({
 
             {/* Info box */}
             <div className="bg-muted/50 rounded-lg border p-4">
-              <p className="text-sm">
-                This is a custom tool not published to the CAAL Tool Registry. Share it to help
-                others discover and use this tool. All keys, ids, and private URLs will be stripped
-                automatically.
-              </p>
+              <p className="text-sm">{t('workflow.unpublishedInfo')}</p>
             </div>
           </div>
         </div>
@@ -133,7 +131,7 @@ export function WorkflowDetailModal({
             onClick={() => onShare(workflow)}
             className="btn-glow bg-primary-bg text-primary-foreground flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium"
           >
-            Share to Registry
+            {t('workflow.shareButton')}
             <ArrowRight className="h-4 w-4" />
           </button>
         </div>

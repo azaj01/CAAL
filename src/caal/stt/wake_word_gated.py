@@ -12,17 +12,16 @@ import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
 
 import numpy as np
 from livekit import rtc
 from livekit.agents.stt import (
+    STT,
     RecognizeStream,
     SpeechEvent,
     SpeechEventType,
-    STT,
-    STTCapabilities,
     StreamAdapter,
+    STTCapabilities,
 )
 from livekit.agents.types import (
     DEFAULT_API_CONNECT_OPTIONS,
@@ -30,8 +29,8 @@ from livekit.agents.types import (
     APIConnectOptions,
     NotGivenOr,
 )
-from livekit.agents.utils import aio
-from livekit.agents.vad import VADEvent, VADEventType
+from livekit.agents.utils import AudioBuffer, aio
+from livekit.agents.vad import VADEventType
 from livekit.plugins import silero
 from openwakeword.model import Model as OWWModel
 

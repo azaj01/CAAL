@@ -27,8 +27,8 @@ from typing import Any
 
 import ollama
 
-from ..utils.formatting import strip_markdown_for_tts
 from ..integrations.n8n import execute_n8n_workflow
+from ..utils.formatting import strip_markdown_for_tts
 
 logger = logging.getLogger(__name__)
 
@@ -336,13 +336,13 @@ async def _discover_tools(agent) -> list[dict] | None:
                         continue
                     param_type = "string"
                     if param.annotation != inspect.Parameter.empty:
-                        if param.annotation == str:
+                        if param.annotation is str:
                             param_type = "string"
-                        elif param.annotation == int:
+                        elif param.annotation is int:
                             param_type = "integer"
-                        elif param.annotation == float:
+                        elif param.annotation is float:
                             param_type = "number"
-                        elif param.annotation == bool:
+                        elif param.annotation is bool:
                             param_type = "boolean"
                     properties[param_name] = {"type": param_type}
                     if param.default == inspect.Parameter.empty and param_name != "self":

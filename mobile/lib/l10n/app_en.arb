@@ -1,0 +1,258 @@
+{
+  "@@locale": "en",
+
+  "welcomeSubtitle": "Chat live with your voice AI agent",
+  "@welcomeSubtitle": { "description": "Subtitle on welcome screen" },
+
+  "talkToAgent": "Talk to CAAL",
+  "@talkToAgent": { "description": "Button to start conversation" },
+
+  "connecting": "Connecting",
+  "@connecting": { "description": "Button text while connecting" },
+
+  "agentListening": "CAAL is listening",
+  "@agentListening": { "description": "Status when agent is listening" },
+
+  "agentIsListening": "Agent is listening",
+  "@agentIsListening": { "description": "Placeholder when no messages" },
+
+  "startConversation": "Start a conversation to see messages here.",
+  "@startConversation": { "description": "Empty state subtitle" },
+
+  "sayWakeWord": "Say \"Hey Jarvis\"",
+  "@sayWakeWord": { "description": "Wake word prompt" },
+
+  "waitingForWakeWord": "Waiting for wake word...",
+  "@waitingForWakeWord": { "description": "Wake word waiting subtitle" },
+
+  "screenshareView": "Screenshare View",
+  "@screenshareView": { "description": "Screenshare placeholder" },
+
+  "settings": "Settings",
+  "@settings": { "description": "Settings button tooltip" },
+
+  "settingsTitle": "Settings",
+  "@settingsTitle": { "description": "Settings screen title" },
+
+  "caalSetup": "CAAL Setup",
+  "@caalSetup": { "description": "Setup screen title" },
+
+  "save": "Save",
+  "@save": { "description": "Save button" },
+
+  "saving": "Saving...",
+  "@saving": { "description": "Save in progress" },
+
+  "test": "Test",
+  "@test": { "description": "Test button" },
+
+  "connect": "CONNECT",
+  "@connect": { "description": "Connect button on setup" },
+
+  "connection": "Connection",
+  "@connection": { "description": "Connection section header" },
+
+  "serverUrl": "Server URL",
+  "@serverUrl": { "description": "Server URL field label" },
+
+  "serverUrlHint": "http://192.168.1.100:3000",
+  "@serverUrlHint": { "description": "Server URL placeholder" },
+
+  "serverUrlRequired": "Server URL is required",
+  "@serverUrlRequired": { "description": "Validation error" },
+
+  "serverUrlInvalid": "Enter a valid URL",
+  "@serverUrlInvalid": { "description": "Validation error" },
+
+  "yourServerAddress": "Your CAAL server address",
+  "@yourServerAddress": { "description": "Server URL helper text" },
+
+  "connectedToServer": "Connected to CAAL server",
+  "@connectedToServer": { "description": "Connection success" },
+
+  "enterServerFirst": "Enter a valid server URL first",
+  "@enterServerFirst": { "description": "Validation error" },
+
+  "serverReturned": "Server returned {code}",
+  "@serverReturned": { "description": "Server error with code", "placeholders": { "code": { "type": "int" } } },
+
+  "couldNotConnect": "Could not connect to server",
+  "@couldNotConnect": { "description": "Connection error" },
+
+  "couldNotReach": "Could not reach server",
+  "@couldNotReach": { "description": "Connection error" },
+
+  "completeWizardFirst": "Complete the first-start wizard in your browser first",
+  "@completeWizardFirst": { "description": "Setup not complete message" },
+
+  "enterServerToStart": "Enter your server address to get started",
+  "@enterServerToStart": { "description": "Setup instruction" },
+
+  "completeWizardHint": "Complete the first-start wizard in your browser, then connect here.",
+  "@completeWizardHint": { "description": "Setup hint" },
+
+  "connectToServerFirst": "Connect to server to configure agent settings",
+  "@connectToServerFirst": { "description": "Settings unavailable message" },
+
+  "agent": "Agent",
+  "@agent": { "description": "Agent section header" },
+
+  "agentName": "Agent Name",
+  "@agentName": { "description": "Agent name field" },
+
+  "wakeGreetings": "Wake Greetings",
+  "@wakeGreetings": { "description": "Wake greetings field" },
+
+  "onePerLine": "One greeting per line",
+  "@onePerLine": { "description": "Wake greetings hint" },
+
+  "providers": "Providers",
+  "@providers": { "description": "Providers section header" },
+
+  "llmProvider": "LLM Provider",
+  "@llmProvider": { "description": "LLM provider label" },
+
+  "ollamaLocalPrivate": "Local, private",
+  "@ollamaLocalPrivate": { "description": "Ollama subtitle" },
+
+  "groqFastCloud": "Fast cloud",
+  "@groqFastCloud": { "description": "Groq subtitle" },
+
+  "ollamaHost": "Ollama Host",
+  "@ollamaHost": { "description": "Ollama host field" },
+
+  "apiKey": "API Key",
+  "@apiKey": { "description": "API key field" },
+
+  "model": "Model",
+  "@model": { "description": "Model dropdown label" },
+
+  "modelsAvailable": "{count} models available",
+  "@modelsAvailable": { "description": "Model count", "placeholders": { "count": { "type": "int" } } },
+
+  "apiKeyConfigured": "API key configured (enter new key to change)",
+  "@apiKeyConfigured": { "description": "Groq key configured hint" },
+
+  "connectionFailed": "Connection failed",
+  "@connectionFailed": { "description": "Connection error" },
+
+  "failedToConnect": "Failed to connect",
+  "@failedToConnect": { "description": "Connection error" },
+
+  "failedToValidate": "Failed to validate",
+  "@failedToValidate": { "description": "Validation error" },
+
+  "invalidApiKey": "Invalid API key",
+  "@invalidApiKey": { "description": "API key error" },
+
+  "ttsProvider": "TTS Provider",
+  "@ttsProvider": { "description": "TTS provider label" },
+
+  "kokoroGpuNeural": "GPU neural TTS",
+  "@kokoroGpuNeural": { "description": "Kokoro subtitle" },
+
+  "piperCpuLightweight": "CPU lightweight",
+  "@piperCpuLightweight": { "description": "Piper subtitle" },
+
+  "voice": "Voice",
+  "@voice": { "description": "Voice dropdown label" },
+
+  "integrations": "Integrations",
+  "@integrations": { "description": "Integrations section header" },
+
+  "homeAssistant": "Home Assistant",
+  "@homeAssistant": { "description": "Home Assistant toggle" },
+
+  "hostUrl": "Host URL",
+  "@hostUrl": { "description": "Host URL field" },
+
+  "accessToken": "Access Token",
+  "@accessToken": { "description": "Access token field" },
+
+  "connectedEntities": "Connected - {count} entities",
+  "@connectedEntities": { "description": "HASS connected status", "placeholders": { "count": { "type": "int" } } },
+
+  "connected": "Connected",
+  "@connected": { "description": "Connected status" },
+
+  "n8nMcpNote": "/mcp-server/http will be appended automatically",
+  "@n8nMcpNote": { "description": "n8n URL note" },
+
+  "llmSettings": "LLM Settings",
+  "@llmSettings": { "description": "LLM settings section" },
+
+  "temperature": "Temperature",
+  "@temperature": { "description": "Temperature field" },
+
+  "contextSize": "Context Size",
+  "@contextSize": { "description": "Context size field" },
+
+  "maxTurns": "Max Turns",
+  "@maxTurns": { "description": "Max turns field" },
+
+  "toolCache": "Tool Cache",
+  "@toolCache": { "description": "Tool cache field" },
+
+  "allowInterruptions": "Allow Interruptions",
+  "@allowInterruptions": { "description": "Interruptions toggle" },
+
+  "interruptAgent": "Interrupt the agent while speaking",
+  "@interruptAgent": { "description": "Interruptions description" },
+
+  "endpointingDelay": "Endpointing Delay (s)",
+  "@endpointingDelay": { "description": "Endpointing delay field" },
+
+  "endpointingDelayDesc": "How long to wait after you stop speaking",
+  "@endpointingDelayDesc": { "description": "Endpointing delay description" },
+
+  "wakeWord": "Wake Word",
+  "@wakeWord": { "description": "Wake word section" },
+
+  "serverSideWakeWord": "Server-Side Wake Word",
+  "@serverSideWakeWord": { "description": "Wake word toggle label" },
+
+  "activateWithWakePhrase": "Activate with wake phrase",
+  "@activateWithWakePhrase": { "description": "Wake word description" },
+
+  "wakeWordModel": "Wake Word Model",
+  "@wakeWordModel": { "description": "Wake word model dropdown" },
+
+  "threshold": "Threshold",
+  "@threshold": { "description": "Threshold field" },
+
+  "timeout": "Timeout (s)",
+  "@timeout": { "description": "Timeout field" },
+
+  "language": "Language",
+  "@language": { "description": "Language selector label" },
+
+  "languageEnglish": "English",
+  "@languageEnglish": { "description": "English option" },
+
+  "languageFrench": "Francais",
+  "@languageFrench": { "description": "French option" },
+
+  "languageItalian": "Italiano",
+  "@languageItalian": { "description": "Italian option" },
+
+  "changesNote": "Note: Model, context size, and wake word changes take effect on next session.",
+  "@changesNote": { "description": "Settings note" },
+
+  "failedToLoad": "Failed to load settings: {error}",
+  "@failedToLoad": { "description": "Load error", "placeholders": { "error": { "type": "String" } } },
+
+  "failedToSave": "Failed to save: {error}",
+  "@failedToSave": { "description": "Save error", "placeholders": { "error": { "type": "String" } } },
+
+  "failedToSaveAgent": "Failed to save agent settings: {code}",
+  "@failedToSaveAgent": { "description": "Agent save error", "placeholders": { "code": { "type": "int" } } },
+
+  "downloadingVoice": "Downloading voice model...",
+  "@downloadingVoice": { "description": "Voice download status" },
+
+  "messageHint": "Message...",
+  "@messageHint": { "description": "Text input placeholder" },
+
+  "toolParameters": "Tool Parameters",
+  "@toolParameters": { "description": "Tool details sheet title" }
+}

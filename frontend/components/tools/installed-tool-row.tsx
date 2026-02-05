@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { ArrowsClockwise, ShareNetwork } from '@phosphor-icons/react/dist/ssr';
 import { CATEGORY_LABELS, type ToolCategory, type ToolIndexEntry } from '@/types/tools';
@@ -39,6 +40,7 @@ export function InstalledToolRow({
   onClick,
   onUpdate,
 }: InstalledToolRowProps) {
+  const t = useTranslations('Tools');
   const isCustom = status.type === 'custom';
   const hasUpdate = status.type === 'registry' && !status.upToDate;
 
@@ -53,7 +55,7 @@ export function InstalledToolRow({
   // Category label for registry tools, "Custom" for custom
   const categoryLabel = registryTool
     ? CATEGORY_LABELS[registryTool.category as ToolCategory] || registryTool.category
-    : 'Custom';
+    : t('card.customBadge');
 
   return (
     <div
@@ -81,7 +83,7 @@ export function InstalledToolRow({
           {/* Status dot - uses primary color */}
           <span
             className={`h-2 w-2 shrink-0 rounded-full ${workflow.active ? 'bg-primary' : 'bg-gray-500'}`}
-            title={workflow.active ? 'Active' : 'Inactive'}
+            title={workflow.active ? t('card.activeLabel') : t('card.inactiveLabel')}
           />
         </div>
         <div className="text-muted-foreground flex items-center gap-2 text-sm">
@@ -107,7 +109,7 @@ export function InstalledToolRow({
           className="text-primary hover:bg-primary/10 flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors"
         >
           <ShareNetwork className="h-4 w-4" weight="bold" />
-          Share
+          {t('card.shareButtonShort')}
         </button>
       ) : hasUpdate && onUpdate ? (
         <button
@@ -118,7 +120,7 @@ export function InstalledToolRow({
           className="flex shrink-0 items-center gap-1.5 rounded-lg bg-orange-500/20 px-3 py-1.5 text-sm font-medium text-orange-400 transition-colors hover:bg-orange-500/30"
         >
           <ArrowsClockwise className="h-4 w-4" weight="bold" />
-          Update
+          {t('card.updateButton')}
         </button>
       ) : null}
     </div>

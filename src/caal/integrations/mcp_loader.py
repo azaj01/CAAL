@@ -4,7 +4,6 @@ Loads MCP server definitions from settings, environment variables, and optional 
 Settings take priority, then env vars, then JSON file.
 """
 
-import asyncio
 import json
 import logging
 import os

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion } from 'motion/react';
 import { PaperPlaneRightIcon, SpinnerIcon } from '@phosphor-icons/react/dist/ssr';
 import { Button } from '@/components/livekit/button';
@@ -34,6 +35,7 @@ export function ChatInput({
   isAgentAvailable = false,
   onSend = async () => {},
 }: ChatInputProps) {
+  const t = useTranslations('ControlBar');
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState<string>('');
@@ -77,7 +79,7 @@ export function ChatInput({
           type="text"
           value={message}
           disabled={!chatOpen}
-          placeholder="Type something..."
+          placeholder={t('typePlaceholder')}
           onChange={(e) => setMessage(e.target.value)}
           className="h-8 flex-1 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         />
@@ -86,7 +88,7 @@ export function ChatInput({
           type="submit"
           disabled={isDisabled}
           variant={isDisabled ? 'secondary' : 'primary'}
-          title={isSending ? 'Sending...' : 'Send'}
+          title={isSending ? t('sending') : t('send')}
           className="self-start"
         >
           {isSending ? (

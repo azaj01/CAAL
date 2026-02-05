@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslations } from 'next-intl';
 import { WrenchIcon } from '@phosphor-icons/react/dist/ssr';
 import { Tooltip } from '@/components/ui/tooltip';
 import { useToolStatus } from '@/hooks/useToolStatus';
@@ -15,6 +16,7 @@ import { cn } from '@/lib/utils';
  * Click to see tool parameters in a popup.
  */
 export function ToolStatusIndicator() {
+  const t = useTranslations('Tools');
   const toolStatus = useToolStatus();
   const [popupOpen, setPopupOpen] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -51,10 +53,10 @@ export function ToolStatusIndicator() {
 
   // Tooltip content based on status
   const tooltipContent = !hasStatus
-    ? 'Tool status'
+    ? t('status.initialTooltip')
     : toolUsed
-      ? `Tool: ${toolNames.join(', ')}`
-      : 'No tool used';
+      ? t('status.toolUsedTooltip', { names: toolNames.join(', ') })
+      : t('status.noToolTooltip');
 
   return (
     <div ref={containerRef} className="relative flex items-center gap-1.5">
@@ -71,10 +73,10 @@ export function ToolStatusIndicator() {
           )}
           aria-label={
             !hasStatus
-              ? 'Tool status: waiting for response'
+              ? t('status.waitingAriaLabel')
               : toolUsed
-                ? `Tool used: ${toolNames.join(', ')}. Click for details.`
-                : 'No tool called - response generated from model'
+                ? t('status.toolDetailsAriaLabel', { names: toolNames.join(', ') })
+                : t('status.noToolAriaLabel')
           }
         >
           <WrenchIcon
@@ -99,7 +101,9 @@ export function ToolStatusIndicator() {
       {popupOpen && toolParams.length > 0 && (
         <div className="absolute bottom-full left-0 z-50 mb-2">
           <div className="border-border bg-popover max-w-72 min-w-48 rounded-lg border p-3 shadow-lg">
-            <div className="text-muted-foreground mb-2 text-xs font-semibold">Tool Parameters</div>
+            <div className="text-muted-foreground mb-2 text-xs font-semibold">
+              {t('status.parametersTitle')}
+            </div>
             {toolNames.map((name, i) => (
               <div key={i} className="mb-2 last:mb-0">
                 <div className="text-foreground mb-1 text-sm font-medium">{name}</div>
