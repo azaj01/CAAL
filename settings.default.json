@@ -3,7 +3,7 @@
   "agent_name": "Cal",
   "tts_voice": "am_puck",
   "prompt": "default",
-  "temperature": 0.7,
+  "temperature": 0.15,
   "model": "ministral-3:8b",
   "num_ctx": 8192,
   "max_turns": 20,

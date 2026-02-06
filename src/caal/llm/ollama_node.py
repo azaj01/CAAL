@@ -73,7 +73,7 @@ class OllamaLLMNode:
         self,
         model: str = "qwen3:8b",
         think: bool = False,
-        temperature: float = 0.7,
+        temperature: float = 0.15,
         top_p: float = 0.8,
         top_k: int = 20,
     ):
@@ -98,7 +98,7 @@ async def ollama_llm_node(
     chat_ctx,
     model: str = "qwen3:8b",
     think: bool = False,
-    temperature: float = 0.7,
+    temperature: float = 0.15,
     top_p: float = 0.8,
     top_k: int = 20,
     num_ctx: int = 8192,

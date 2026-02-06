@@ -132,7 +132,7 @@ def get_runtime_settings() -> dict:
         "stt_provider": user_settings.get("stt_provider") or os.getenv("STT_PROVIDER", "speaches"),
         # LLM Provider settings - .env overrides default, user setting overrides .env
         "llm_provider": user_settings.get("llm_provider") or os.getenv("LLM_PROVIDER", "ollama"),
-        "temperature": settings.get("temperature", float(os.getenv("OLLAMA_TEMPERATURE", "0.7"))),
+        "temperature": settings.get("temperature", float(os.getenv("OLLAMA_TEMPERATURE", "0.15"))),
         # Ollama settings
         "ollama_host": (
             user_settings.get("ollama_host")

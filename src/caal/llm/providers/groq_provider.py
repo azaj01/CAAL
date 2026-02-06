@@ -42,7 +42,7 @@ class GroqProvider(LLMProvider):
         self,
         model: str = "llama-3.3-70b-versatile",
         api_key: str | None = None,
-        temperature: float = 0.7,
+        temperature: float = 0.15,
         max_tokens: int = 4096,
     ) -> None:
         self._model = model

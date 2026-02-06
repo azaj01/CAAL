@@ -20,7 +20,7 @@ Example:
     >>> llm = OllamaLLM(
     ...     model="qwen3:8b",
     ...     think=False,  # Disable thinking for lower latency
-    ...     temperature=0.7,
+    ...     temperature=0.15,
     ... )
     >>>
     >>> session = AgentSession(stt=..., llm=llm, tts=...)
@@ -78,7 +78,7 @@ class OllamaLLM(llm.LLM):
         *,
         model: str = "qwen3:8b",
         think: bool = False,
-        temperature: float = 0.7,
+        temperature: float = 0.15,
         top_p: float = 0.8,
         top_k: int = 20,
         num_ctx: int = 8192,

@@ -61,7 +61,7 @@ def create_provider(
         ...     "ollama",
         ...     model="qwen3:8b",
         ...     think=False,
-        ...     temperature=0.7,
+        ...     temperature=0.15,
         ... )
     """
     provider_name = provider_name.lower()
@@ -106,7 +106,7 @@ def create_provider_from_settings(settings: dict[str, Any]) -> LLMProvider:
             model=settings.get("ollama_model", "qwen3:8b"),
             base_url=settings.get("ollama_host"),
             think=settings.get("think", False),
-            temperature=settings.get("temperature", 0.7),
+            temperature=settings.get("temperature", 0.15),
             num_ctx=settings.get("num_ctx", 8192),
         )
     elif provider_name == "groq":
@@ -115,7 +115,7 @@ def create_provider_from_settings(settings: dict[str, Any]) -> LLMProvider:
         return GroqProvider(
             model=settings.get("groq_model", "llama-3.3-70b-versatile"),
             api_key=api_key,
-            temperature=settings.get("temperature", 0.7),
+            temperature=settings.get("temperature", 0.15),
         )
     else:
         raise ValueError(

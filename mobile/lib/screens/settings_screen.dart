@@ -58,7 +58,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _n8nToken = '';
 
   // LLM settings
-  double _temperature = 0.7;
+  double _temperature = 0.15;
   int _numCtx = 8192;
   int _maxTurns = 20;
   int _toolCacheSize = 3;
