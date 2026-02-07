@@ -6,14 +6,14 @@
 
 > **Local voice assistant with n8n workflow integrations and Home Assistant control**
 
-Built on [LiveKit Agents](https://docs.livekit.io/agents/). Runs fully local with [Ollama](https://ollama.ai/) + [Speaches](https://github.com/speaches-ai/speaches) + [Kokoro](https://github.com/remsky/Kokoro-FastAPI), or GPU-free with [Groq](https://groq.com/) + [Piper](https://github.com/rhasspy/piper).
+Built on [LiveKit Agents](https://docs.livekit.io/agents/). Runs fully local with [Ollama](https://ollama.ai/) + [Speaches](https://github.com/speaches-ai/speaches) + [Kokoro](https://github.com/remsky/Kokoro-FastAPI), cloud with [Groq](https://groq.com/) or [OpenRouter](https://openrouter.ai/), or any [OpenAI-compatible](https://platform.openai.com/docs/api-reference) API.
 
 ![CAAL Voice Assistant](frontend/.github/assets/readme-hero.webp)
 
 ## Features
 
 - **First-Start Wizard** - Configure everything from the browser, only one edit in `.env` required
-- **Flexible Providers** - Ollama (local) or Groq (cloud) for LLM/STT, Kokoro or Piper for TTS
+- **Flexible Providers** - Ollama (local), Groq, OpenRouter, or any OpenAI-compatible API for LLM. Speaches or Groq for STT. Kokoro or Piper for TTS
 - **Home Assistant** - Native MCP integration with simplified `hass_control` and `hass_get_state` tools
 - **n8n Workflows** - Expandable LLM tool capability - any n8n workflow can become a tool for CAAL
 - **Wake Word Detection** - "Hey Cal" activation via OpenWakeWord (server-side)
@@ -85,10 +85,11 @@ docker compose -f docker-compose.cpu.yaml --profile https up -d
 ```
 
 In the setup wizard:
-1. Select **Groq** as LLM provider and enter your [free API key](https://console.groq.com/)
-2. Select **Piper** as TTS provider (models download automatically)
+1. Choose your STT provider (Speaches or Groq Whisper)
+2. Select your LLM provider — **Groq** ([free API key](https://console.groq.com/)), **OpenRouter** ([free/paid models](https://openrouter.ai/)), or any **OpenAI-compatible** API
+3. Select **Piper** as TTS provider (models download automatically)
 
-> **Note:** Voice data is sent to Groq's API. For fully local operation, use GPU mode with Ollama.
+> **Note:** Cloud providers send data to external APIs. For fully local operation, use GPU mode with Ollama.
 
 ---
 
@@ -190,12 +191,11 @@ See `.env.example` for additional options (ports, default models).
 
 After setup, click the gear icon to access the settings panel:
 
-- **Agent** - Agent name, voice selection, wake greetings
+- **Agent** - Agent name, wake greetings, wake word settings
 - **Prompt** - Default or custom system prompt
-- **Providers** - LLM provider (Ollama/Groq), TTS provider (Kokoro/Piper)
-- **LLM Settings** - Temperature, context size, max turns, turn detection settings
+- **Voice Pipeline** - STT provider (Speaches/Groq Whisper), TTS engine (Kokoro/Piper), voice selection
+- **AI Provider** - LLM provider (Ollama/Groq/OpenRouter/OpenAI-compatible), model selection, temperature, context size
 - **Integrations** - Home Assistant and n8n connection configuration
-- **Wake Word** - Enable/disable, model selection, threshold, timeout
 
 ---
 
@@ -345,7 +345,7 @@ uv run pytest            # Test
             │                        │                        │
       ┌─────┴─────┐           ┌──────┴──────┐          ┌──────┴──────┐
       │Ollama/Groq│           │     n8n     │          │    Home     │
-      │   (LLM)   │           │  Workflows  │          │  Assistant  │
+      │/OpenRouter│           │  Workflows  │          │  Assistant  │
       └───────────┘           └─────────────┘          └─────────────┘
                        External Services (via MCP)
 ```
@@ -357,7 +357,7 @@ uv run pytest            # Test
 ### WebRTC Not Connecting
 
 1. Check `CAAL_HOST_IP` matches your network mode
-2. Verify firewall ports: 3000, 7880, 7881, 50000-50100 (UDP)
+2. Verify firewall ports: 3000, 7880, 7881, 51000-51100 (UDP)
 3. Check logs: `docker compose logs livekit | grep -i "ice\|error"`
 
 ### Ollama Connection Failed
@@ -395,6 +395,7 @@ If Home Assistant or n8n fail to connect, you'll see a toast notification with t
 - [mlx-audio](https://github.com/Blaizzy/mlx-audio) - STT/TTS for Apple Silicon
 - [Ollama](https://ollama.ai/) - Local LLM server
 - [Groq](https://groq.com/) - Fast cloud LLM inference (free tier available)
+- [OpenRouter](https://openrouter.ai/) - Unified API for 200+ LLM models
 - [n8n](https://n8n.io/) - Workflow automation
 - [Home Assistant](https://www.home-assistant.io/) - Smart home platform
 

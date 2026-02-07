@@ -245,6 +245,7 @@ OLLAMA_KEEP_ALIVE=24h ollama serve
 - Default: `ministral-3:8b` (good tool-calling, low latency)
 - Alternative: `llama3.1:8b`, `qwen2.5:7b`
 - Any Ollama model works, but 7-8B models offer the best latency/quality balance
+- Cloud providers (Groq, OpenRouter, OpenAI-compatible) can also be configured via the settings panel
 
 ## Memory Usage
 

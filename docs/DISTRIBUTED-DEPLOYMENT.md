@@ -68,7 +68,7 @@ This guide describes how to deploy CAAL in a distributed architecture, separatin
 - 8889 (Agent webhooks)
 - 11434 (Ollama API)
 - 3443 (nginx HTTPS)
-- 50000-50100 (WebRTC UDP media)
+- 51000-51100 (WebRTC UDP media)
 
 ### Step 1: Install NVIDIA Container Toolkit
 
@@ -303,8 +303,8 @@ Create `livekit-tailscale.yaml`:
 ```yaml
 port: 7880
 rtc:
-  port_range_start: 50000
-  port_range_end: 50100
+  port_range_start: 51000
+  port_range_end: 51100
   tcp_port: 7881
   use_external_ip: false
   node_ip: 100.x.x.x  # Your Tailscale IP
