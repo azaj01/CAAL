@@ -45,7 +45,7 @@ interface SetupWizardProps {
 const INITIAL_DATA: SetupData = {
   stt_provider: 'speaches',
   llm_provider: 'ollama',
-  ollama_host: 'http://localhost:11434',
+  ollama_host: 'http://host.docker.internal:11434',
   ollama_model: '',
   groq_api_key: '',
   groq_model: '',

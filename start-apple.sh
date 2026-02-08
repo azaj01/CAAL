@@ -28,12 +28,6 @@ if [ -f "$SCRIPT_DIR/.env" ]; then
     source "$SCRIPT_DIR/.env"
 fi
 
-# Set Docker profile based on HTTPS_DOMAIN
-if [ -n "${HTTPS_DOMAIN}" ]; then
-    DOCKER_PROFILE="--profile https"
-else
-    DOCKER_PROFILE=""
-fi
 
 banner() {
     echo -e "${CYAN}${BOLD}"
@@ -77,7 +71,7 @@ stop_all() {
 
     # Stop Docker
     log "Stopping Docker containers..."
-    docker compose -f docker-compose.apple.yaml $DOCKER_PROFILE down || true
+    docker compose -f docker-compose.apple.yaml down || true
 
     # Stop mlx-audio
     if [ -f "$MLX_PID_FILE" ]; then
@@ -237,7 +231,7 @@ fi
 
 # Start Docker services
 log "Starting Docker services..."
-docker compose -f docker-compose.apple.yaml $DOCKER_PROFILE up -d
+docker compose -f docker-compose.apple.yaml up -d
 
 # Wait for services
 printf "${GREEN}[CAAL]${NC} Waiting for services"
@@ -252,11 +246,7 @@ echo -e "${CYAN}═════════════════════�
 echo -e "${BOLD}  CAAL is ready!${NC}"
 echo -e "${CYAN}══════════════════════════════════════════════════════════${NC}"
 echo ""
-if [ -n "${HTTPS_DOMAIN}" ]; then
-    echo -e "  ${BOLD}Web interface:${NC}  https://${HTTPS_DOMAIN}:3443"
-else
-    echo -e "  ${BOLD}Web interface:${NC}  http://localhost:3000"
-fi
+echo -e "  ${BOLD}Web interface:${NC}  https://${HTTPS_DOMAIN:-${CAAL_HOST_IP:-localhost}}:3443"
 echo -e "  ${BOLD}Stop command:${NC}   ./start-apple.sh --stop"
 echo ""
 echo -e "  ${BOLD}Logs:${NC}"

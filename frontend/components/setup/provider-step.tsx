@@ -242,7 +242,7 @@ export function ProviderStep({ data, updateData }: ProviderStepProps) {
                 type="text"
                 value={data.ollama_host}
                 onChange={(e) => updateData({ ollama_host: e.target.value })}
-                placeholder="http://localhost:11434"
+                placeholder="http://host.docker.internal:11434"
                 className="border-input bg-background flex-1 rounded-md border px-3 py-2"
               />
               <button

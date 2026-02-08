@@ -87,7 +87,7 @@ const DEFAULT_SETTINGS: Settings = {
   theme: 'midnight',
   stt_provider: 'speaches',
   llm_provider: 'ollama',
-  ollama_host: 'http://localhost:11434',
+  ollama_host: 'http://host.docker.internal:11434',
   ollama_model: '',
   groq_api_key: '',
   groq_model: '',
@@ -1203,7 +1203,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   type="text"
                   value={settings.ollama_host}
                   onChange={(e) => setSettings({ ...settings, ollama_host: e.target.value })}
-                  placeholder="http://localhost:11434"
+                  placeholder="http://host.docker.internal:11434"
                   className="input-field text-foreground flex-1 px-4 py-3 text-sm"
                 />
                 <button
